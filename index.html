@@ -215,6 +215,13 @@ select{font:inherit;color:var(--ink);background:var(--sheet);border:1px solid va
 .stp .hit{width:100%;height:30px;display:flex;align-items:center;touch-action:pan-y;cursor:pointer;margin-bottom:-6px;border-radius:6px}
 .stp .sbar{width:100%;height:10px;border-radius:5px;background:var(--soft);overflow:hidden}
 .stp .sbar b{display:block;height:100%;background:var(--tc);border-radius:5px}
+.rcard{align-items:stretch;min-width:0}
+.rcard .top{min-width:0}
+.rcard .top b{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#app>.top .ghost{white-space:nowrap;flex:none}
+#app>.top>div{min-width:0;flex:1}
+#app>.top h1,#app>.top>div>.muted,#app>.top>.muted{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+#app>.top>.muted{text-align:right;flex:1}
 </style>
 <div id="app"></div>
 <script>
@@ -371,7 +378,7 @@ const V={
   <div><label>ประเภท</label><div class="chips chips3" style="margin-top:6px">${KS.map(k=>`<button data-ntype="${k}" class="tyb ty-${k}" aria-pressed="${n.type===k}">${{jc:"Journal",topic:"Topic",clin:"Grand round"}[k]}</button>`).join("")}</div></div>
   ${F?F.head.map(([k,l])=>`<label for="n-${k}">${l}<input id="n-${k}" type="text" data-nf="${k}" value="${esc(n.f[k])}"></label>`).join(""):""}
   <label for="n-date">วันที่<input id="n-date" type="date" data-n="date" value="${n.date}"></label>
-  <div><label>อาจารย์ผู้ประเมิน (เลือกได้หลายท่าน)</label><div class="tpick" style="margin-top:8px">${Object.entries(STAFF).map(([c,nm])=>`<button data-nas="${c}" aria-pressed="${n.as.includes(c)}">${av(c)}<span class="tn">${esc(nm)}</span><span class="ck" aria-hidden="true">${n.as.includes(c)?"✓":""}</span></button>`).join("")}</div></div>
+  <div><div class="top"><label>อาจารย์ผู้ประเมิน</label><button type="button" class="small" style="white-space:nowrap;flex:none" data-nasall aria-pressed="${n.as.length===Object.keys(STAFF).length}">${n.as.length===Object.keys(STAFF).length?"ล้างทั้งหมด":"All"}</button></div><div class="tpick" style="margin-top:8px">${Object.entries(STAFF).map(([c,nm])=>`<button data-nas="${c}" aria-pressed="${n.as.includes(c)}">${av(c)}<span class="tn">${esc(nm)}</span><span class="ck" aria-hidden="true">${n.as.includes(c)?"✓":""}</span></button>`).join("")}</div></div>
   ${S.err?`<div class="err" role="alert">${S.err}</div>`:""}
   <div class="bar"><div><div class="tot muted">ส่งถึงอาจารย์ ${n.as.length} ท่าน</div><button class="primary" data-send ${S.sending?"disabled":""}>${S.sending?"กำลังส่ง…":"ส่ง"}</button></div></div>`}
 };
@@ -461,6 +468,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("button")||e.targ
    go("detail",{open:id,draft:null,saved:true})}
  else if("new" in ds)go("rnew",{nw:{type:"",f:{},date:today(),as:[],res:""}});
  else if(ds.ntype){S.nw.type=ds.ntype;S.err="";keep()}
+ else if("nasall" in ds){const all=Object.keys(STAFF);S.nw.as=S.nw.as.length===all.length?[]:all;S.err="";keep()}
  else if(ds.nas){const a=S.nw.as,i=a.indexOf(ds.nas);i<0?a.push(ds.nas):a.splice(i,1);S.err="";keep()}
  else if("send" in ds){const n=S.nw,F=FORMS[n.type];let m="";
    const adm=role(S.me)==="admin",rc=adm?n.res:S.me,back=x=>adm?go("ahome",{nw:null,tab:"pend",...x}):go("rhome",{nw:null,rtab:"list",...x});
