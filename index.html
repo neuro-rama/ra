@@ -194,6 +194,27 @@ button.pcard{align-items:stretch}
 .slider input::-moz-range-thumb{width:32px;height:32px}
 select{font:inherit;color:var(--ink);background:var(--sheet);border:1px solid var(--edge);border-radius:10px;padding:9px 12px;width:100%;min-height:44px}
 .rog>div:first-child{grid-column:1/-1}
+#sv{bottom:auto;top:calc(8px + env(safe-area-inset-top,0px));font-size:.74rem;padding:5px 12px}
+.slider{grid-template-columns:36px minmax(0,1fr) 36px;gap:10px;align-items:start;padding:0}
+.slider button{min-height:36px;height:36px;margin-top:4px;border:1.5px solid var(--edge);background:var(--sheet);color:var(--ink);font-size:1.1rem;box-shadow:0 1px 3px rgba(17,24,39,.06)}
+.sw{display:flex;flex-direction:column;min-width:0}
+.slider input{height:44px}
+.slider input::-webkit-slider-runnable-track{height:8px;border-radius:4px;background:linear-gradient(to right,var(--tc) var(--p),var(--soft) var(--p))}
+.slider input::-webkit-slider-thumb{width:30px;height:30px;margin-top:-11px;background:var(--sheet);border:3px solid var(--tc);box-shadow:0 2px 6px rgba(17,24,39,.22)}
+.slider input::-moz-range-track{height:8px;border-radius:4px;background:var(--soft)}
+.slider input::-moz-range-progress{height:8px;border-radius:4px;background:var(--tc)}
+.slider input::-moz-range-thumb{width:24px;height:24px;background:var(--sheet);border:3px solid var(--tc);box-shadow:0 2px 6px rgba(17,24,39,.22)}
+.ticks{display:flex;justify-content:space-between;padding:0 15px;margin-top:-8px;font-family:var(--num);font-size:.66rem;color:var(--muted);pointer-events:none}
+.ticks span{width:0;display:flex;justify-content:center}
+.stp{display:flex;align-items:center;gap:12px;border:1.5px solid var(--edge);border-radius:14px;padding:6px 10px;background:var(--sheet)}
+.stp button{width:44px;height:44px;min-height:44px;flex:none;padding:0;border-radius:50%;border:1.5px solid var(--tc);background:var(--sheet);color:var(--tc);font-size:1.4rem;line-height:1;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.stp button:active{background:var(--soft)}
+.stp .mid{flex:1;display:flex;flex-direction:column;align-items:center;min-width:0}
+.stp .big{font-family:var(--num);font-weight:600;font-size:1.4rem;line-height:1.1}
+.stp .big small{font-size:.72rem;color:var(--muted);font-weight:500}
+.stp .hit{width:100%;height:30px;display:flex;align-items:center;touch-action:pan-y;cursor:pointer;margin-bottom:-6px;border-radius:6px}
+.stp .sbar{width:100%;height:10px;border-radius:5px;background:var(--soft);overflow:hidden}
+.stp .sbar b{display:block;height:100%;background:var(--tc);border-radius:5px}
 </style>
 <div id="app"></div>
 <script>
@@ -204,7 +225,8 @@ const years=()=>[["all","ทั้งหมด"],...[...new Set(Object.values(RE
 const API="https://script.google.com/macros/s/AKfycbxM4QIvuIBaTFjDrEdmbnyrYH9QsoeaTjJwYIlJsdxGt4Nnmw2E90z0TPGVuG5gAKTv7Q/exec";
 const RUN=typeof google!=="undefined"&&google.script&&google.script.run?google.script.run:null,GAS=RUN||API;
 const call=q=>RUN?new Promise((ok,no)=>RUN.withSuccessHandler(ok).withFailureHandler(no).api(q))
- :fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({...q,app:location.origin+location.pathname})}).then(r=>{if(!r.ok)throw 0;return r.json()});
+ :new Promise((ok,no)=>{const ac=new AbortController(),tm=setTimeout(()=>{ac.abort();no(new Error("timeout"))},35000);
+  fetch(API,{method:"POST",signal:ac.signal,headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({...q,app:location.origin+location.pathname})}).then(r=>{if(!r.ok)throw 0;return r.json()}).then(ok,no).finally(()=>clearTimeout(tm))});
 const MAXLEN=6,KS=["jc","topic","clin"];
 const G9=["#c0392b","#d2522b","#dd6f2a","#e08e22","#d9a81e","#b3b02a","#7fae3a","#4a9f4a","#1f8a4c"],G9T=["#fff","#fff","#fff","#111","#111","#111","#111","#fff","#fff"];
 const FORMS={
@@ -251,7 +273,7 @@ const doneOf=c=>S.reqs.filter(r=>r.status==="done"&&r.resCode===c);
 const acts=(c,t)=>new Set(S.reqs.filter(r=>r.resCode===c&&r.type===t).map(r=>r.group)).size;
 const ro=(F,f,h)=>[...F.head,...(h?[]:F.chips||[])].filter(([k])=>f[k]&&String(f[k]).length).map(([k,l])=>`<div><div class="muted">${l}</div><div>${esc(f[k])}</div></div>`).join("");
 let W=0,P=0,Q=Promise.resolve();
-const svEl=()=>{let e=document.getElementById("sv");if(!e){e=document.createElement("div");e.id="sv";e.setAttribute("role","status");document.body.appendChild(e)}e.textContent=P?"กำลังบันทึก… อย่าเพิ่งปิดหน้านี้":"";e.style.display=P?"block":"none"};
+const svEl=()=>{let e=document.getElementById("sv");if(!e){e=document.createElement("div");e.id="sv";e.setAttribute("role","status");document.body.appendChild(e)}e.textContent=P?"กำลังบันทึก…":"";e.style.display=P?"block":"none"};
 const wr=q=>{W++;P++;svEl();const run=n=>call(q).then(x=>{if(!x||!x.ok)throw 0;return x}).catch(e=>{if(n>0)return new Promise(r=>setTimeout(r,2000)).then(()=>run(n-1));throw e});
  const p=Q.then(()=>run(2));Q=p.catch(()=>{});return p.finally(()=>{P--;W++;svEl()})};
 function persist(){if(!DB&&!GAS)ls.set("nra_reqs",JSON.stringify(S.reqs))}
@@ -306,10 +328,10 @@ const V={
    ${(F.chips||[]).map(([k,l,opts])=>{const ch=`<span class="chips" role="group" aria-label="ความยากง่าย" style="flex-wrap:nowrap">${opts.map(o=>`<button type="button" data-chip="${k}" data-v="${o}" aria-pressed="${d.f[k]===o}">${o}</button>`).join("")}</span>`,ms=S.miss&&!d.f[k]?" miss":"";
     return d.reqId?`<div class="inl${ms}" style="justify-content:space-between;flex-wrap:nowrap"><span class="muted" style="white-space:nowrap">${d.date}</span><span class="inl" style="flex-wrap:nowrap;gap:6px"><b style="font-size:.78rem;white-space:nowrap">ความยากง่าย</b>${ch}</span></div>`
      :`<div class="dd"><label for="f-date">วันที่<input id="f-date" type="date" data-k="date" value="${d.date}"></label><div class="${ms.trim()}"><label>ความยากง่าย</label>${ch}</div></div>`}).join("")}</div>
-  <p class="muted" style="font-size:.78rem">${F.kind==="slider"?"ข้อละ 20 คะแนน · แตะชื่อข้อเพื่อดูเกณฑ์":"กดเลือกคะแนน 1–9 · 1–3 Unsatisfactory · 4–6 Satisfactory · 7–9 Superior"}</p>
+  <p class="muted" style="font-size:.78rem">${F.kind==="slider"?"ข้อละ 20 คะแนน · แตะชื่อข้อเพื่อดูเกณฑ์":"1–3 Unsatisfactory · 4–6 Satisfactory · 7–9 Superior"}</p>
   ${F.items.map((q,i)=>{const miss=S.miss&&(F.kind==="slider"?!d.touched[i]:d.scores[i]===null),sq=short(q),rest=q.slice(sq.length).trim(),v=d.scores[i];
-   if(F.kind==="slider")return `<div class="item${miss?" miss":""}"><div class="top"><button type="button" class="q qb" data-qd="${i}" aria-expanded="${S.qd===i}">${i+1}. ${sq}${miss?` <span class="need">ยังไม่ได้ให้คะแนน</span>`:""}</button><output id="o-${i}" class="n">${d.touched[i]?v:"–"}<small>/20</small></output></div>${S.qd===i&&rest?`<div class="qd">${rest}</div>`:""}
-    <div class="slider"><button type="button" data-step="${i}" data-dv="-1" aria-label="ลด 1 คะแนน">−</button><input id="sc-${i}" type="range" min="0" max="20" step="1" value="${v}" style="--p:${v*5}%" data-sl="${i}" aria-label="${esc(sq)}"><button type="button" data-step="${i}" data-dv="1" aria-label="เพิ่ม 1 คะแนน">+</button></div></div>`;
+   if(F.kind==="slider")return `<div class="item${miss?" miss":""}"><div class="top"><button type="button" class="q qb" data-qd="${i}" aria-expanded="${S.qd===i}">${i+1}. ${sq}${miss?` <span class="need">ยังไม่ได้ให้คะแนน</span>`:""}</button></div>${S.qd===i&&rest?`<div class="qd">${rest}</div>`:""}
+    <div class="stp"><button type="button" data-step="${i}" data-dv="-1" aria-label="ลด 1 คะแนน">−</button><div class="mid"><output id="o-${i}" class="big">${d.touched[i]?v:"–"}<small>/20</small></output><div class="hit" id="sc-${i}" data-bar="${i}" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="20" aria-valuenow="${v}" aria-label="${esc(sq)}"><div class="sbar"><b id="b-${i}" style="width:${v*5}%"></b></div></div></div><button type="button" data-step="${i}" data-dv="1" aria-label="เพิ่ม 1 คะแนน">+</button></div></div>`;
    return `<div class="item${miss?" miss":""}"><div class="q">${i+1}. ${sq}${miss?` <span class="need">ยังไม่ได้ให้คะแนน</span>`:""}</div>${
     `<div class="scale s9">${[1,2,3,4,5,6,7,8,9].map(n=>`<button type="button" data-sc="${i}" data-v="${n}" aria-pressed="${v===n}" ${v===n?`style="background:${G9[n-1]};color:${G9T[n-1]}"`:""}>${n}</button>`).join("")}<button type="button" class="na" data-sc="${i}" data-v="NA" aria-pressed="${v==="NA"}" aria-label="N/A ไม่ได้ประเมิน">N/A</button></div>`
    }</div>`}).join("")}
@@ -381,7 +403,24 @@ function key(k){if(S.view!=="login")return;
   S.err=S.code?"ไม่พบรหัส "+S.code+" กรุณาตรวจสอบอีกครั้ง":"กรุณาใส่รหัสประจำตัว"}
  else if(S.code.length<MAXLEN){S.code+=k;S.err=""}
  render()}
+function setScore(i,v){const d=S.draft,was=d.touched[i];d.scores[i]=Math.max(0,Math.min(20,v));d.touched[i]=true;
+ if(S.err||(S.miss&&!was)){S.err="";keep();return}
+ const o=document.getElementById("o-"+i);if(!o){keep();return}
+ o.firstChild.textContent=d.scores[i];document.getElementById("b-"+i).style.width=d.scores[i]*5+"%";document.getElementById("sc-"+i).setAttribute("aria-valuenow",d.scores[i]);
+ const t=total(S.type,d.scores);document.getElementById("tot").textContent=totalText(S.type,t);document.getElementById("lvl").textContent=level(S.type,t)||"คะแนนรวม"}
+const bump=(i,dv)=>setScore(i,S.draft.touched[i]?S.draft.scores[i]+dv:15);
+let HOLD=null,HELD=false;const unhold=()=>{clearTimeout(HOLD);clearInterval(HOLD);HOLD=null};
+document.addEventListener("pointerdown",e=>{if(S.view!=="form"||!e.target.closest)return;
+ const b=e.target.closest("[data-step]");
+ if(b){const i=+b.dataset.step,dv=+b.dataset.dv;HELD=false;unhold();HOLD=setTimeout(()=>{HELD=true;bump(i,dv);HOLD=setInterval(()=>bump(i,dv),90)},450);return}
+ const h=e.target.closest("[data-bar]");if(!h)return;const i=+h.dataset.bar;
+ const at=x=>{const el=document.getElementById("sc-"+i);if(!el)return;const r=el.getBoundingClientRect();setScore(i,Math.round((x-r.left)/r.width*20))};
+ const x0=e.clientX;let drag=false;const off=()=>{removeEventListener("pointermove",mv);removeEventListener("pointerup",up);removeEventListener("pointercancel",off)},
+  mv=ev=>{if(drag||Math.abs(ev.clientX-x0)>6){drag=true;at(ev.clientX)}},up=ev=>{at(ev.clientX);off()};
+ addEventListener("pointermove",mv);addEventListener("pointerup",up);addEventListener("pointercancel",off)});
+["pointerup","pointercancel"].forEach(t=>addEventListener(t,unhold,true));addEventListener("blur",e=>{if(e.target===window)unhold()});document.addEventListener("visibilitychange",unhold);
 document.addEventListener("keydown",e=>{
+ if(S.view==="form"&&e.target.dataset&&e.target.dataset.bar){const dv={ArrowRight:1,ArrowUp:1,ArrowLeft:-1,ArrowDown:-1}[e.key];if(dv){e.preventDefault();const i=+e.target.dataset.bar;bump(i,dv);const el=document.getElementById("sc-"+i);if(el)el.focus();return}}
  if(S.view==="login"){if(/^\d$/.test(e.key))key(e.key);else if(e.key==="Backspace")key("del");else if(e.key==="Enter"){e.preventDefault();key("ok")}return}
  if((e.key==="Enter"||e.key===" ")&&e.target.matches&&e.target.matches("[role=button]")){e.preventDefault();e.target.click()}});
 document.addEventListener("input",e=>{const el=e.target,d=S.draft;
@@ -410,7 +449,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("button")||e.targ
  else if(ds.open)go("detail",{open:ds.open,saved:false});
  else if(ds.chip){S.err="";d.f[ds.chip]=ds.v;keep()}
  else if(ds.sc){S.err="";d.scores[+ds.sc]=ds.v==="NA"?"NA":+ds.v;keep()}
- else if(ds.step){S.err="";const i=+ds.step;d.scores[i]=Math.max(0,Math.min(20,d.scores[i]+(+ds.dv)));d.touched[i]=true;keep()}
+ else if(ds.step){if(HELD){HELD=false;return}bump(+ds.step,+ds.dv)}
  else if(ds.qd){S.qd=S.qd===+ds.qd?null:+ds.qd;keep()}
  else if("fb" in ds){S.fb=true;keep()}
  else if("save" in ds){const F=FORMS[S.type],bad=F.kind==="slider"?d.touched.map((x,i)=>x?0:i+1):d.scores.map((x,i)=>x===null?i+1:0);let m="";
