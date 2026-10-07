@@ -179,6 +179,10 @@ hr{border:none;border-top:1px solid var(--line);margin:0;width:100%}
 button.tcard{align-items:flex-start}
 button.pcard{align-items:stretch}
 .ty-clin .item .q{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chips.hfc{flex-wrap:nowrap}.chips.hfc button{flex:1 1 auto;white-space:nowrap;min-width:0;padding-left:8px;padding-right:8px}
+@media(max-width:350px){.chips.hfc button{font-size:.78rem;padding-left:5px;padding-right:5px}}
+.jobc .typ{flex:0 0 max(40%,122px)}
+#sv{display:none;position:fixed;left:50%;bottom:14px;transform:translateX(-50%);background:#111827;color:#fff;font-size:.8rem;padding:7px 14px;border-radius:999px;z-index:50;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2)}
 </style>
 <div id="app"></div>
 <script>
@@ -235,25 +239,29 @@ function level(type,t){if(type==="jc")return "";if(type==="clin")return t>=7?"Su
 const doneOf=c=>S.reqs.filter(r=>r.status==="done"&&r.resCode===c);
 const acts=(c,t)=>new Set(S.reqs.filter(r=>r.resCode===c&&r.type===t).map(r=>r.group)).size;
 const ro=(F,f,h)=>[...F.head,...(h?[]:F.chips||[])].filter(([k])=>f[k]&&String(f[k]).length).map(([k,l])=>`<div><div class="muted">${l}</div><div>${esc(f[k])}</div></div>`).join("");
+let W=0,P=0,Q=Promise.resolve();
+const svEl=()=>{let e=document.getElementById("sv");if(!e){e=document.createElement("div");e.id="sv";e.setAttribute("role","status");document.body.appendChild(e)}e.textContent=P?"กำลังบันทึก… อย่าเพิ่งปิดหน้านี้":"";e.style.display=P?"block":"none"};
+const wr=q=>{W++;P++;svEl();const run=n=>call(q).then(x=>{if(!x||!x.ok)throw 0;return x}).catch(e=>{if(n>0)return new Promise(r=>setTimeout(r,2000)).then(()=>run(n-1));throw e});
+ const p=Q.then(()=>run(2));Q=p.catch(()=>{});return p.finally(()=>{P--;W++;svEl()})};
 function persist(){if(!DB&&!GAS)ls.set("nra_reqs",JSON.stringify(S.reqs))}
 function put(r){const i=S.reqs.findIndex(x=>x.id===r.id);i<0?S.reqs.push(r):S.reqs[i]=r;persist();
- if(GAS){call({code:S.me,action:"save",r}).then(x=>{if(!x||!x.ok)throw 0}).catch(()=>{S.warn="บันทึกลง Google Sheets ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองอีกครั้ง";render()});return}
+ if(GAS){wr({code:S.me,action:"save",r}).then(x=>{if(!x||!x.ok)throw 0}).catch(()=>{S.warn="บันทึกลง Google Sheets ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองอีกครั้ง";render()});return}
  if(DB)DB.collection("requests").doc(r.id).set(r).catch(()=>{S.warn="บันทึกขึ้นฐานข้อมูลกลางไม่สำเร็จ ลองอีกครั้ง";render()})}
 function del(id){S.reqs=S.reqs.filter(x=>x.id!==id);persist();
- if(GAS){call({code:S.me,action:"delete",id}).then(x=>{if(!x||!x.ok)throw 0}).catch(()=>{S.warn="ลบไม่สำเร็จ ลองอีกครั้ง";render()});return}
+ if(GAS){wr({code:S.me,action:"delete",id}).then(x=>{if(!x||!x.ok)throw 0}).catch(()=>{S.warn="ลบไม่สำเร็จ ลองอีกครั้ง";render()});return}
  if(DB)DB.collection("requests").doc(id).delete().catch(()=>{S.warn="ลบไม่สำเร็จ ลองอีกครั้ง";render()})}
 function go(view,x={}){Object.assign(S,{view,note:"",qd:null,miss:false,fb:false,err:"",confirm:null,adding:null},x);render();scrollTo(0,0)}
 const home=()=>go({res:"rhome",admin:"ahome"}[role(S.me)]||"thome");
 function load(x){STAFF=x.staff;RES=x.res;ADMIN=x.admin;S.reqs=x.requests.map(norm);S.reqs.forEach(r=>{if(r.resName)NM[r.resCode]=r.resName;if(r.assessorName)NM[r.assessor]=r.assessorName})}
 function enter(code){S.me=code;ls.set("nra_me",code);S.code="";S.tab=role(code)==="admin"?"dash":"todo";S.rtab="list";home()}
 function signin(code,quiet){S.busy=true;if(!quiet)render();
- call({code,action:"login"}).then(x=>{S.busy=false;if(x&&x.ok){load(x);enter(code)}else{ls.set("nra_me",null);S.me=null;S.view="login";S.err=quiet?"":"ไม่พบรหัส "+code+" กรุณาตรวจสอบอีกครั้ง";render()}})
+ call({code,action:"login"}).then(x=>{S.busy=false;if(x&&x.ok){load(x);if(S.view==="login")enter(code);else keep()}else{ls.set("nra_me",null);S.me=null;S.view="login";S.err=quiet?"":"ไม่พบรหัส "+code+" กรุณาตรวจสอบอีกครั้ง";render()}})
   .catch(()=>{S.busy=false;S.view="login";S.err="เชื่อมต่อไม่ได้ กรุณาลองอีกครั้ง";render()})}
-function sync(){if(!GAS||!S.me||S.busy)return;call({code:S.me,action:"login"}).then(x=>{if(x&&x.ok){load(x);if(["thome","rhome","ahome","person"].includes(S.view))keep()}}).catch(()=>{})}
+function sync(){if(!GAS||!S.me||S.busy||P)return;const w=W;call({code:S.me,action:"login"}).then(x=>{if(x&&x.ok&&w===W){load(x);if(["thome","rhome","ahome","person"].includes(S.view))keep()}}).catch(()=>{})}
 function start(type,req,res){const F=FORMS[type];
  go("form",{type,draft:{reqId:req?req.id:null,group:req?req.group:null,date:req?req.date:today(),resCode:req?req.resCode:res,
   f:req?{title:req.title,...(req.f||{})}:{},scores:F.items.map(()=>F.kind==="slider"?0:null),touched:F.items.map(()=>false),t:{}}})}
-const hdr=t=>`<div class="top"><div style="min-width:0"><p class="muted">${esc(nameOf(S.me))}</p><h1>${t}</h1></div><button class="ghost" data-out>Sign out</button></div>`;
+const hdr=t=>`<div class="top"><div style="min-width:0">${t?`<p class="muted">${esc(nameOf(S.me))}</p><h1>${t}</h1>`:`<h1>${esc(nameOf(S.me))}</h1>`}</div><button class="ghost" data-out>Sign out</button></div>`;
 const warn=()=>(S.note?`<div class="okb" role="status">${S.note}</div>`:"")+(S.warn?`<div class="err">${S.warn}</div>`:"");
 const tabs=(attr,cur,items)=>`<div class="tabs" style="grid-template-columns:repeat(${items.length},minmax(0,1fr))">${items.map(([k,l,c])=>`<button data-${attr}="${k}" class="${c||""}" aria-current="${cur===k}">${l}</button>`).join("")}</div>`;
 const recCard=r=>`<button class="card ty-${r.type}" data-open="${r.id}"><span class="nm"><b>${esc(plain(r.resCode))}</b><span class="muted"><span class="tn2" style="font-size:.82rem">${FORMS[r.type].sh}</span> · ${r.date}</span></span><span class="n">${totalText(r.type,nat(r))}</span></button>`;
@@ -269,16 +277,16 @@ const V={
   if(S.tab==="todo")body=todo.length?todo.map(r=>{const R=RES[r.resCode]||{f:r.resCode,l:""};return `<button class="card jobc ty-${r.type}" data-job="${r.id}" aria-label="ประเมิน ${esc(nameOf(r.resCode))} ${FORMS[r.type].name}">${av(r.resCode)}<span class="nm"><b>${esc(R.f)}</b><b>${esc(R.l)}</b><span class="muted">${r.resCode}</span></span><span class="typ"><span class="tn2">${FORMS[r.type].sh}</span><span>${esc(r.title)}</span><span>${r.date}</span>${r.remindedAt?`<span class="need">ธุรการแจ้งเตือน</span>`:""}</span><span class="chev" aria-hidden="true">›</span></button>`}).join(""):`<div class="empty">ยังไม่มีใบประเมินที่รอประเมิน<br>เมื่อแพทย์ประจำบ้านส่งมา ใบงานจะขึ้นที่นี่</div>`;
   else if(S.tab==="self")body=Object.keys(RES).map(c=>`<button class="card" data-self="${c}">${av(c)}<span class="nm"><b>${esc(plain(c))}</b><span class="muted">${c} · ${RES[c].y}</span></span><span class="chev" aria-hidden="true">›</span></button>`).join("");
   else if(S.tab==="hist"){const l=done.filter(r=>S.hf==="all"||r.type===S.hf);
-   body=`<div class="chips"><button data-hf="all" aria-pressed="${S.hf==="all"}">ทั้งหมด</button>${KS.map(k=>`<button data-hf="${k}" class="tyb ty-${k}" aria-pressed="${S.hf===k}">${FORMS[k].sh}</button>`).join("")}</div>`+(l.length?l.map(recCard).join(""):`<div class="empty">ยังไม่มีใบที่ประเมินแล้ว</div>`)}
+   body=`<div class="chips hfc"><button data-hf="all" aria-pressed="${S.hf==="all"}">All</button>${KS.map(k=>`<button data-hf="${k}" class="tyb ty-${k}" aria-pressed="${S.hf===k}">${k==="jc"?"Journal":FORMS[k].sh}</button>`).join("")}</div>`+(l.length?l.map(recCard).join(""):`<div class="empty">ยังไม่มีใบที่ประเมินแล้ว</div>`)}
   else body=dash();
-  return hdr(title)+tabs("tab",S.tab,[["todo","รอประเมิน"+(todo.length?` <span class="badge">${todo.length}</span>`:"")],["self","ประเมินเอง"],["hist","ประเมินแล้ว"],["dash","ภาพรวม"]])+body+warn()},
+  return hdr()+tabs("tab",S.tab,[["todo","รอประเมิน"+(todo.length?` <span class="badge">${todo.length}</span>`:"")],["self","ประเมินเอง"],["hist","ประเมินแล้ว"],["dash","ภาพรวม"]])+body+warn()},
  ahome:()=>{const done=S.reqs.filter(r=>r.status==="done").sort((a,b)=>(b.doneAt||"")<(a.doneAt||"")?-1:1),pend=S.reqs.filter(r=>r.status==="pending").sort((a,b)=>a.date<b.date?-1:1);
   let body="";
   if(S.tab==="hist"){const l=done.filter(r=>S.hf==="all"||r.type===S.hf);
-   body=`<div class="chips"><button data-hf="all" aria-pressed="${S.hf==="all"}">ทั้งหมด</button>${KS.map(k=>`<button data-hf="${k}" class="tyb ty-${k}" aria-pressed="${S.hf===k}">${FORMS[k].sh}</button>`).join("")}</div>`+(l.length?l.map(recCard).join(""):`<div class="empty">ยังไม่มีใบที่ประเมินแล้ว</div>`)}
+   body=`<div class="chips hfc"><button data-hf="all" aria-pressed="${S.hf==="all"}">All</button>${KS.map(k=>`<button data-hf="${k}" class="tyb ty-${k}" aria-pressed="${S.hf===k}">${k==="jc"?"Journal":FORMS[k].sh}</button>`).join("")}</div>`+(l.length?l.map(recCard).join(""):`<div class="empty">ยังไม่มีใบที่ประเมินแล้ว</div>`)}
   else if(S.tab==="pend")body=pend.length?pend.map(r=>`<div class="card ty-${r.type}" style="display:flex;align-items:center;gap:10px"><span class="nm"><b>${esc(plain(r.resCode))}</b><span class="muted"><span class="tn2" style="font-size:.82rem">${FORMS[r.type].sh}</span> · ${r.date}</span><span class="muted">รอ ${esc(nameOf(r.assessor))}${r.remindedAt?` · แจ้งแล้ว ${r.remindedAt.slice(0,10)}`:""}</span></span><button class="small" data-remind="${r.id}">${r.remindedAt?"แจ้งอีกครั้ง":"แจ้งเตือน"}</button></div>`).join(""):`<div class="empty">ไม่มีใบที่ค้างประเมิน</div>`;
   else body=dash();
-  return hdr({dash:"ภาพรวม",hist:"ใบที่ประเมินแล้ว",pend:"ใบที่ค้างประเมิน"}[S.tab]||"ภาพรวม")+tabs("tab",S.tab,[["dash","ภาพรวม"],["hist","ประเมินแล้ว"],["pend","ค้างประเมิน"+(pend.length?` <span class="badge">${pend.length}</span>`:"")]])+body+warn()},
+  return hdr()+tabs("tab",S.tab,[["dash","ภาพรวม"],["hist","ประเมินแล้ว"],["pend","ค้างประเมิน"+(pend.length?` <span class="badge">${pend.length}</span>`:"")]])+body+warn()},
  form:()=>{const F=FORMS[S.type],d=S.draft,t=total(S.type,d.scores),any=F.kind==="slider"?d.touched.some(Boolean):d.scores.some(x=>typeof x==="number");
   return `<div class="top"><button class="ghost" data-home>‹ กลับ</button><span class="muted">${esc(nameOf(S.me))}</span></div>
   ${d.reqId?`<h1 class="tn2">${F.name}</h1>`:tabs("ftype",S.type,KS.map(k=>[k,FORMS[k].sh,"ty-"+k]))}
@@ -316,7 +324,7 @@ const V={
   :`<div class="empty">ยังไม่มีผลการประเมิน</div>`)+(me?"":`<div class="bar"><div><button class="primary" style="flex:1" data-tab="dash">‹ กลับไปภาพรวม</button></div></div>`)},
  rhome:()=>{const g={};S.reqs.filter(r=>r.resCode===S.me).forEach(r=>(g[r.group]=g[r.group]||[]).push(r));
   const groups=Object.values(g).sort((a,b)=>a[0].date<b[0].date?1:-1);
-  return hdr(S.rtab==="me"?"ภาพรวมของฉัน":"ใบประเมินของฉัน")+tabs("rtab",S.rtab,[["list","ใบประเมิน"],["me","ภาพรวมของฉัน"]])+(S.rtab==="me"?V.person(S.me):`<button class="primary" data-new>+ ส่งใบประเมินใหม่</button>`+
+  return hdr()+tabs("rtab",S.rtab,[["list","ใบประเมิน"],["me","ภาพรวมของฉัน"]])+(S.rtab==="me"?V.person(S.me):`<button class="primary" data-new>+ ส่งใบประเมินใหม่</button>`+
   (groups.length?groups.map(rs=>{const r=rs[0],used=rs.map(x=>x.assessor),free=Object.keys(STAFF).filter(c=>!used.includes(c)),op=S.openG===r.group;
    return `<div class="card rcard ty-${r.type}" data-tog="${r.group}" role="button" tabindex="0" aria-expanded="${op}"><span class="tn2">${FORMS[r.type].name}</span><div class="top"><b>${esc(r.title)}</b><span class="muted" style="white-space:nowrap">${r.date}</span></div>
    <div class="tog" style="min-height:28px"><span>อาจารย์ ${rs.length} ท่าน · ประเมินแล้ว ${rs.filter(x=>x.status==="done").length}</span><span class="chev">${op?"⌃":"⌄"}</span></div>
@@ -331,7 +339,7 @@ const V={
   <label for="n-date">วันที่<input id="n-date" type="date" data-n="date" value="${n.date}"></label>
   <div><label>อาจารย์ผู้ประเมิน (เลือกได้หลายท่าน)</label><div class="tpick" style="margin-top:8px">${Object.entries(STAFF).map(([c,nm])=>`<button data-nas="${c}" aria-pressed="${n.as.includes(c)}">${av(c)}<span class="tn">${esc(nm)}</span><span class="ck" aria-hidden="true">${n.as.includes(c)?"✓":""}</span></button>`).join("")}</div></div>
   ${S.err?`<div class="err" role="alert">${S.err}</div>`:""}
-  <div class="bar"><div><div class="tot muted">ส่งถึงอาจารย์ ${n.as.length} ท่าน</div><button class="primary" data-send>ส่ง</button></div></div>`}
+  <div class="bar"><div><div class="tot muted">ส่งถึงอาจารย์ ${n.as.length} ท่าน</div><button class="primary" data-send ${S.sending?"disabled":""}>${S.sending?"กำลังส่ง…":"ส่ง"}</button></div></div>`}
 };
 function trend(k,rs){const a=[...rs].sort((x,y)=>x.date<y.date?-1:1).map(nat),n=a.length,l=a[n-1];
  if(n<2)return "ล่าสุด "+fa(k,l);const d=l-a[n-2];return "ล่าสุด "+fa(k,l)+" "+(d>0?"▲ "+fa(k,d):d<0?"▼ "+fa(k,-d):"เท่าเดิม")}
@@ -356,7 +364,7 @@ function render(){const a=document.getElementById("app");a.className=S.view==="f
 function keep(){const y=scrollY;render();scrollTo(0,y)}
 function key(k){if(S.view!=="login")return;
  if(k==="del"){S.code=S.code.slice(0,-1);S.err=""}
- else if(k==="ok"){if(GAS){if(S.code){signin(S.code);return}}else if(role(S.code)){enter(S.code);return}
+ else if(k==="ok"){if(S.busy)return;if(GAS){if(S.code){signin(S.code);return}}else if(role(S.code)){enter(S.code);return}
   if(0){S.me=S.code;ls.set("nra_me",S.me);S.code="";S.tab="todo";S.rtab="list";home();return}
   S.err=S.code?"ไม่พบรหัส "+S.code+" กรุณาตรวจสอบอีกครั้ง":"กรุณาใส่รหัสประจำตัว"}
  else if(S.code.length<MAXLEN){S.code+=k;S.err=""}
@@ -407,9 +415,14 @@ document.addEventListener("click",e=>{const b=e.target.closest("button")||e.targ
    if(!F)m="กรุณาเลือกประเภท";
    else{const h=F.head.find(([k])=>!String(n.f[k]??"").trim());m=h?"กรุณาใส่"+h[1]:!n.as.length?"กรุณาเลือกอาจารย์อย่างน้อย 1 ท่าน":""}
    if(m){S.err=m;keep();return}
-   const g=newId(),f={};F.head.forEach(([k])=>f[k]=n.f[k].trim());
-   n.as.forEach(c=>put({id:newId(),group:g,type:n.type,resCode:S.me,date:n.date,title:f.title,f:{...f},assessor:c,resName:nameOf(S.me),assessorName:nameOf(c),status:"pending"}));
-   go("rhome",{nw:null,rtab:"list"})}
+   if(S.sending)return;
+   n.g=n.g||newId();n.ids=n.ids||{};const g=n.g,f={};F.head.forEach(([k])=>f[k]=n.f[k].trim());
+   const rs=n.as.map(c=>({id:n.ids[c]||(n.ids[c]=newId()),group:g,type:n.type,resCode:S.me,date:n.date,title:f.title,f:{...f},assessor:c,resName:nameOf(S.me),assessorName:nameOf(c),status:"pending"}));
+   if(!GAS){rs.forEach(put);go("rhome",{nw:null,rtab:"list"});return}
+   S.sending=true;S.err="";P++;W++;keep();
+   call({code:S.me,action:"saveMany",rs}).then(x=>{if(!x||!x.ok||!x.saved)throw 0;rs.forEach(r=>{if(!S.reqs.some(y=>y.id===r.id))S.reqs.push(r)});
+     P--;W++;S.sending=false;go("rhome",{nw:null,rtab:"list",note:"ส่งถึงอาจารย์ "+rs.length+" ท่านเรียบร้อยแล้ว"})})
+    .catch(e=>{P--;W++;S.sending=false;if(S.view==="rnew"){S.err="ส่งไม่สำเร็จ กรุณากดส่งอีกครั้ง (กดซ้ำได้ ระบบไม่สร้างใบซ้ำ)";keep()}})}
  else if(ds.del){S.confirm=ds.del;keep()}
  else if(ds.delyes){del(ds.delyes);S.confirm=null;keep()}
  else if(ds.add){S.adding=ds.add;keep()}
