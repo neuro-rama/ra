@@ -245,8 +245,8 @@ const NM={};
 const years=()=>[["all","ทั้งหมด"],...[...new Set(Object.values(RES).map(r=>r.y))].sort().map(y=>[y,y.replace("/"," / ")])];
 const API="https://script.google.com/macros/s/AKfycbxM4QIvuIBaTFjDrEdmbnyrYH9QsoeaTjJwYIlJsdxGt4Nnmw2E90z0TPGVuG5gAKTv7Q/exec";
 const RUN=typeof google!=="undefined"&&google.script&&google.script.run?google.script.run:null,GAS=RUN||API;
-const call=q=>RUN?new Promise((ok,no)=>RUN.withSuccessHandler(ok).withFailureHandler(no).api(q))
- :new Promise((ok,no)=>{const ac=new AbortController(),tm=setTimeout(()=>{ac.abort();no(new Error("timeout"))},35000);
+const call=(q,ms=35000)=>RUN?new Promise((ok,no)=>RUN.withSuccessHandler(ok).withFailureHandler(no).api(q))
+ :new Promise((ok,no)=>{const ac=new AbortController(),tm=setTimeout(()=>{ac.abort();no(new Error("timeout"))},ms);
   fetch(API,{method:"POST",signal:ac.signal,headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({...q,app:location.origin+location.pathname})}).then(r=>{if(!r.ok)throw 0;return r.json()}).then(ok,no).finally(()=>clearTimeout(tm))});
 const MAXLEN=6,KS=["jc","topic","clin"];
 const G9=["#c0392b","#d2522b","#dd6f2a","#e08e22","#d9a81e","#b3b02a","#7fae3a","#4a9f4a","#1f8a4c"],G9T=["#fff","#fff","#fff","#111","#111","#111","#111","#fff","#fff"];
@@ -309,10 +309,17 @@ function del(id){S.reqs=S.reqs.filter(x=>x.id!==id);persist();
 function go(view,x={}){Object.assign(S,{view,note:"",qd:null,miss:false,fb:false,err:"",confirm:null,adding:null},x);render();scrollTo(0,0)}
 const home=()=>go({res:"rhome",admin:"ahome"}[role(S.me)]||"thome");
 function load(x){STAFF=x.staff;RES=x.res;ADMIN=x.admin;S.reqs=x.requests.map(norm);S.reqs.forEach(r=>{if(r.resName)NM[r.resCode]=r.resName;if(r.assessorName)NM[r.assessor]=r.assessorName})}
-function enter(code){S.me=code;ls.set("nra_me",code);S.code="";S.tab=role(code)==="admin"?"dash":"todo";S.rtab="list";home()}
-function signin(code,quiet){S.busy=true;if(!quiet)render();
- call({code,action:"login"}).then(x=>{S.busy=false;if(x&&x.ok){load(x);if(S.view==="login")enter(code);else keep()}else{ls.set("nra_me",null);S.me=null;S.view="login";S.err=quiet?"":"ไม่พบรหัส "+code+" กรุณาตรวจสอบอีกครั้ง";render()}})
-  .catch(()=>{S.busy=false;S.view="login";S.err="เชื่อมต่อไม่ได้ กรุณาลองอีกครั้ง";render()})}
+let JOB=null;const readJob=()=>{const m=location.hash.match(/j=([^&]+)/);if(m)JOB=decodeURIComponent(m[1])};readJob();
+function openJob(){if(!JOB||!S.me)return;const id=JOB;JOB=null;try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
+ if(role(S.me)!=="staff")return;const r=S.reqs.find(x=>x.id===id);
+ if(!r||r.assessor!==S.me){S.note="ไม่พบใบประเมินนี้ อาจถูกลบไปแล้ว";keep();return}
+ if(r.closedYear){S.note="ใบนี้ปิดรับประเมินแล้ว";keep();return}
+ r.status==="done"?editDone(r):start(r.type,r)}
+addEventListener("hashchange",()=>{readJob();openJob()});
+function enter(code){S.me=code;ls.set("nra_me",code);S.code="";S.tab=role(code)==="admin"?"dash":"todo";S.rtab="list";home();openJob()}
+function signin(code,quiet,tries=0){S.busy=true;S.slow=tries>0;if(!quiet||tries)render();
+ call({code,action:"login"},45000).then(x=>{S.busy=false;if(x&&x.ok){load(x);if(S.view==="login")enter(code);else keep()}else{ls.set("nra_me",null);S.me=null;S.view="login";S.err=quiet?"":"ไม่พบรหัส "+code+" กรุณาตรวจสอบอีกครั้ง";render()}})
+  .catch(()=>{if(tries<2){setTimeout(()=>signin(code,quiet,tries+1),800);return}S.busy=false;S.slow=false;S.view="login";S.err="เชื่อมต่อไม่ได้ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองอีกครั้ง";render()})}
 function sync(){if(!GAS||!S.me||S.busy||P)return;const w=W;call({code:S.me,action:"login"}).then(x=>{if(x&&x.ok&&w===W){load(x);if(["thome","rhome","ahome","person"].includes(S.view))keep()}}).catch(()=>{})}
 function editDone(r){const F=FORMS[r.type];
  go("form",{type:r.type,fb:Object.values(r.t||{}).some(Boolean),draft:{reqId:r.id,group:r.group,date:r.date,resCode:r.resCode,f:{title:r.title,...(r.f||{})},
@@ -328,7 +335,7 @@ const V={
  login:()=>`<div style="padding-top:28px;text-align:center"><h1>Neuro RA</h1><p class="muted">ประเมินแพทย์ประจำบ้าน</p></div>
   <p class="muted" style="text-align:center">รหัสประจำตัว</p>
   <div class="code" aria-live="polite">${S.code||'<span class="muted">– – – – – –</span>'}</div>
-  ${S.busy?`<p class="muted" style="text-align:center" role="status">กำลังตรวจสอบ…</p>`:""}${S.err?`<div class="err" role="alert">${S.err}</div>`:""}
+  ${S.busy?`<p class="muted" style="text-align:center" role="status">${S.slow?"กำลังเชื่อมต่อ… ระบบกำลังเริ่มทำงาน อาจใช้เวลาสักครู่":"กำลังตรวจสอบ…"}</p>`:""}${S.err?`<div class="err" role="alert">${S.err}</div>`:""}
   <div class="pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-d="${n}">${n}</button>`).join("")}<button data-d="del" aria-label="ลบ">⌫</button><button data-d="0">0</button><button data-d="ok" class="primary">Enter</button></div>`,
  thome:()=>{const mine=S.reqs.filter(r=>r.assessor===S.me),todo=mine.filter(r=>r.status==="pending"&&!r.closedYear).sort((a,b)=>a.date<b.date?-1:1),done=mine.filter(r=>r.status==="done").sort((a,b)=>(b.doneAt||"")<(a.doneAt||"")?-1:1);
   const title={todo:"ใบประเมินที่รอประเมิน",self:"เลือกแพทย์ประจำบ้าน",hist:"ประเมินแล้ว",dash:"ภาพรวม"}[S.tab];
