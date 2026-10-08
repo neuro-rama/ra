@@ -6,8 +6,8 @@
 <meta name="robots" content="noindex">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Neuro RA">
-<title>Neuro RA</title>
+<meta name="apple-mobile-web-app-title" content="NeuroRA">
+<title>NeuroRA evaluation</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>html,body{margin:0}:root{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
@@ -332,7 +332,7 @@ const warn=()=>(S.note?`<div class="okb" role="status">${S.note}</div>`:"")+(S.w
 const tabs=(attr,cur,items)=>`<div class="tabs" style="grid-template-columns:repeat(${items.length},minmax(0,1fr))">${items.map(([k,l,c])=>`<button data-${attr}="${k}" class="${c||""}" aria-current="${cur===k}">${l}</button>`).join("")}</div>`;
 const recCard=r=>`<button class="card ty-${r.type}" data-open="${r.id}"><span class="nm"><b>${esc(plain(r.resCode))}</b><span class="muted"><span class="tn2" style="font-size:.82rem">${FORMS[r.type].sh}</span> · ${r.date}</span></span><span class="n">${totalText(r.type,nat(r))}</span></button>`;
 const V={
- login:()=>`<div style="padding-top:28px;text-align:center"><h1>Neuro RA</h1><p class="muted">ประเมินแพทย์ประจำบ้าน</p></div>
+ login:()=>`<div style="padding-top:28px;text-align:center"><h1>NeuroRA evaluation</h1><p class="muted">ประเมินแพทย์ประจำบ้าน</p></div>
   <p class="muted" style="text-align:center">รหัสประจำตัว</p>
   <div class="code" aria-live="polite">${S.code||'<span class="muted">– – – – – –</span>'}</div>
   ${S.busy?`<p class="muted" style="text-align:center" role="status">${S.slow?"กำลังเชื่อมต่อ… ระบบกำลังเริ่มทำงาน อาจใช้เวลาสักครู่":"กำลังตรวจสอบ…"}</p>`:""}${S.err?`<div class="err" role="alert">${S.err}</div>`:""}
