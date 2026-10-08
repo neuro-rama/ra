@@ -222,6 +222,19 @@ select{font:inherit;color:var(--ink);background:var(--sheet);border:1px solid va
 #app>.top>div{min-width:0;flex:1}
 #app>.top h1,#app>.top>div>.muted,#app>.top>.muted{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 #app>.top>.muted{text-align:right;flex:1}
+.rog>div{min-width:0}
+.rog>div>div{overflow-wrap:anywhere;word-break:break-word}
+.rog>div>div:last-child{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.col>div{min-width:0}
+.txt{overflow-wrap:anywhere}
+.trio{gap:0}
+.trio>span{padding:0 8px}
+.trio .tn2{white-space:nowrap}
+@media(max-width:350px){.trio>span{padding:0 5px}.trio .tn2{font-size:.64rem;gap:4px}}
+.trio>span:first-child{padding-left:0}
+.trio>span+span{border-left:1px solid var(--line)}
+#app.locked .stp,#app.locked .scale,#app.locked .fhead .chips,#app.locked textarea,#app.locked .fhead input{pointer-events:none;opacity:.6}
+.lockn{font-size:.8rem;color:var(--muted);background:var(--soft);border-radius:10px;padding:8px 12px}
 </style>
 <div id="app"></div>
 <script>
@@ -274,7 +287,7 @@ const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
 const total=(type,sc)=>{if(type!=="clin")return sc.reduce((a,b)=>a+(b||0),0);const a=avg(sc.filter(x=>typeof x==="number"));return a==null?0:Math.round(a*10)/10};
 const nat=r=>total(r.type,r.scores),fa=(t,a)=>t==="clin"?a.toFixed(1):String(Math.round(a));
 const totalText=(type,t)=>type==="clin"?`${t.toFixed(1)} / 9`:`${t} / 100`;
-function level(type,t){if(type==="jc")return "";if(type==="clin")return t>=7?"Superior":t>=4?"Satisfactory":t>0?"Unsatisfactory":"";
+function level(type,t){if(type==="clin")return t>=7?"Superior":t>=4?"Satisfactory":t>0?"Unsatisfactory":"";
  return t>=90?"ดีเยี่ยม":t>=80?"ดีมาก":t>=70?"ดี":t>=60?"พอใช้":"ควรปรับปรุง"}
 const doneOf=c=>S.reqs.filter(r=>r.status==="done"&&r.resCode===c);
 const acts=(c,t)=>new Set(S.reqs.filter(r=>r.resCode===c&&r.type===t).map(r=>r.group)).size;
@@ -298,6 +311,9 @@ function signin(code,quiet){S.busy=true;if(!quiet)render();
  call({code,action:"login"}).then(x=>{S.busy=false;if(x&&x.ok){load(x);if(S.view==="login")enter(code);else keep()}else{ls.set("nra_me",null);S.me=null;S.view="login";S.err=quiet?"":"ไม่พบรหัส "+code+" กรุณาตรวจสอบอีกครั้ง";render()}})
   .catch(()=>{S.busy=false;S.view="login";S.err="เชื่อมต่อไม่ได้ กรุณาลองอีกครั้ง";render()})}
 function sync(){if(!GAS||!S.me||S.busy||P)return;const w=W;call({code:S.me,action:"login"}).then(x=>{if(x&&x.ok&&w===W){load(x);if(["thome","rhome","ahome","person"].includes(S.view))keep()}}).catch(()=>{})}
+function editDone(r){const F=FORMS[r.type];
+ go("form",{type:r.type,fb:F.texts.some(([k])=>r.t&&r.t[k]),draft:{reqId:r.id,group:r.group,date:r.date,resCode:r.resCode,f:{title:r.title,...(r.f||{})},
+  scores:r.scores.slice(),touched:F.items.map(()=>true),t:{...(r.t||{})},edit:r,locked:true}})}
 function start(type,req,res){const F=FORMS[type];
  go("form",{type,draft:{reqId:req?req.id:null,group:req?req.group:null,date:req?req.date:today(),resCode:req?req.resCode:res,
   f:req?{title:req.title,...(req.f||{})}:{},scores:F.items.map(()=>F.kind==="slider"?0:null),touched:F.items.map(()=>false),t:{}}})}
@@ -324,12 +340,12 @@ const V={
   let body="";
   if(S.tab==="hist"){const l=done.filter(r=>S.hf==="all"||r.type===S.hf);
    body=`<div class="chips hfc"><button data-hf="all" aria-pressed="${S.hf==="all"}">All</button>${KS.map(k=>`<button data-hf="${k}" class="tyb ty-${k}" aria-pressed="${S.hf===k}">${k==="jc"?"Journal":FORMS[k].sh}</button>`).join("")}</div>`+(l.length?l.map(recCard).join(""):`<div class="empty">ยังไม่มีใบที่ประเมินแล้ว</div>`)}
-  else if(S.tab==="pend")body=`<button class="primary" data-new>+ ส่งใบประเมินแทน resident</button>`+(pend.length?pend.map(r=>`<div class="card ty-${r.type}" style="display:flex;align-items:center;gap:10px"><span class="nm"><b>${esc(plain(r.resCode))}</b><span class="muted"><span class="tn2" style="font-size:.82rem">${FORMS[r.type].sh}</span> · ${r.date}</span><span class="muted">รอ ${esc(nameOf(r.assessor))}${r.remindedAt?` · แจ้งแล้ว ${r.remindedAt.slice(0,10)}`:""}</span></span><button class="small" data-remind="${r.id}">${r.remindedAt?"แจ้งอีกครั้ง":"แจ้งเตือน"}</button></div>`).join(""):`<div class="empty">ไม่มีใบที่ค้างประเมิน</div>`);
+  else if(S.tab==="pend")body=`<button class="primary" data-new>+ ส่งใบประเมินแทน resident</button>`+(pend.length?pend.map(r=>`<div class="card ty-${r.type}" style="display:flex;align-items:center;gap:10px"><span class="nm"><b>${esc(plain(r.resCode))}</b><span class="muted"><span class="tn2" style="font-size:.82rem">${FORMS[r.type].sh}</span> · ${r.date}</span><span class="muted">รอ ${esc(nameOf(r.assessor))}${r.remindedAt?` · แจ้งแล้ว ${r.remindedAt.slice(0,10)}`:""}</span></span><span style="display:flex;flex-direction:column;gap:6px;flex:none">${S.confirm===r.id?`<button class="small danger" data-delyes="${r.id}">ยืนยันลบ</button>`:`<button class="small" data-remind="${r.id}">${r.remindedAt?"แจ้งอีกครั้ง":"แจ้งเตือน"}</button><button class="small" data-del="${r.id}">ลบ</button>`}</span></div>`).join(""):`<div class="empty">ไม่มีใบที่ค้างประเมิน</div>`);
   else body=dash();
   return hdr()+tabs("tab",S.tab,[["dash","ภาพรวม"],["hist","ประเมินแล้ว"],["pend","ค้างประเมิน"+(pend.length?` <span class="badge">${pend.length}</span>`:"")]])+body+warn()},
  form:()=>{const F=FORMS[S.type],d=S.draft,t=total(S.type,d.scores),any=F.kind==="slider"?d.touched.some(Boolean):d.scores.some(x=>typeof x==="number");
   return `<div class="top"><button class="ghost" data-home>‹ กลับ</button><span class="muted">${esc(nameOf(S.me))}</span></div>
-  ${d.reqId?`<h1 class="tn2">${F.name}</h1>`:tabs("ftype",S.type,KS.map(k=>[k,FORMS[k].sh,"ty-"+k]))}
+  ${d.edit?`<p class="lockn">${d.locked?"ใบนี้ประเมินแล้ว กด \"แก้ไข\" ด้านล่างเพื่อแก้คะแนน":"กำลังแก้ไข แก้เสร็จแล้วกด \"บันทึกการแก้ไข\""}</p>`:""}${d.reqId?`<h1 class="tn2">${F.name}</h1>`:tabs("ftype",S.type,KS.map(k=>[k,FORMS[k].sh,"ty-"+k]))}
   <div class="fhead"><div class="top"><b style="font-size:1.05rem">${esc(nameOf(d.resCode))}</b><span class="muted">${d.reqId&&!F.chips?d.date:""}</span></div>
    ${d.reqId?`<div class="rog">${ro(F,d.f,1)}</div>`:F.head.map(([k,l])=>`<label for="f-${k}">${l}<input id="f-${k}" type="text" data-f="${k}" value="${esc(d.f[k])}"></label>`).join("")+(F.chips?"":`<label for="f-date">วันที่<input id="f-date" type="date" data-k="date" value="${d.date}"></label>`)}
    ${(F.chips||[]).map(([k,l,opts])=>{const ch=`<span class="chips" role="group" aria-label="ความยากง่าย" style="flex-wrap:nowrap">${opts.map(o=>`<button type="button" data-chip="${k}" data-v="${o}" aria-pressed="${d.f[k]===o}">${o}</button>`).join("")}</span>`,ms=S.miss&&!d.f[k]?" miss":"";
@@ -342,9 +358,9 @@ const V={
    return `<div class="item${miss?" miss":""}"><div class="q">${i+1}. ${sq}${miss?` <span class="need">ยังไม่ได้ให้คะแนน</span>`:""}</div>${
     `<div class="scale s9">${[1,2,3,4,5,6,7,8,9].map(n=>`<button type="button" data-sc="${i}" data-v="${n}" aria-pressed="${v===n}" ${v===n?`style="background:${G9[n-1]};color:${G9T[n-1]}"`:""}>${n}</button>`).join("")}<button type="button" class="na" data-sc="${i}" data-v="NA" aria-pressed="${v==="NA"}" aria-label="N/A ไม่ได้ประเมิน">N/A</button></div>`
    }</div>`}).join("")}
-  ${S.fb?`<div class="col">${F.texts.map(([k,l])=>`<label for="t-${k}">${l}<textarea id="t-${k}" data-t="${k}">${esc(d.t[k])}</textarea></label>`).join("")}</div>`:`<button class="tog" data-fb><span>+ เพิ่มข้อเสนอแนะ (ไม่บังคับ)</span><span class="chev">⌄</span></button>`}
+  ${S.fb?`<div class="col">${F.texts.map(([k,l])=>`<label for="t-${k}">${l}<textarea id="t-${k}" data-t="${k}" ${d.locked?"readonly":""}>${esc(d.t[k])}</textarea></label>`).join("")}</div>`:`<button class="tog" data-fb><span>+ เพิ่มข้อเสนอแนะ (ไม่บังคับ)</span><span class="chev">⌄</span></button>`}
   ${S.err?`<div class="err" role="alert">${S.err}</div>`:""}
-  <div class="bar"><div><div class="tot"><div class="n" id="tot">${any?totalText(S.type,t):S.type==="clin"?"– / 9":"– / 100"}</div><div class="muted" id="lvl">${any?(level(S.type,t)||"คะแนนรวม"):"ยังไม่ได้ให้คะแนน"}</div></div><button class="primary" data-save>บันทึกผล</button></div></div>`},
+  <div class="bar"><div><div class="tot"><div class="n" id="tot">${any?totalText(S.type,t):S.type==="clin"?"– / 9":"– / 100"}</div><div class="muted" id="lvl">${any?(level(S.type,t)||"คะแนนรวม"):"ยังไม่ได้ให้คะแนน"}</div></div>${d.edit?(d.locked?`<button class="primary" data-unlock>แก้ไข</button>`:`<button class="primary" data-save>บันทึกการแก้ไข</button>`):`<button class="primary" data-save>บันทึกผล</button>`}</div></div>`},
  detail:()=>{const r=S.reqs.find(x=>x.id===S.open);if(!r)return hdr("ไม่พบใบประเมิน")+`<button data-home>กลับหน้าแรก</button>`;
   const F=FORMS[r.type],t=nat(r);
   return `<div class="col ty-${r.type}">${S.saved?`<div class="okb" role="status">✓ บันทึกผลแล้ว</div>`:""}<div><p class="muted"><span class="tn2">${F.name}</span> · ${r.date} · ผู้ประเมิน ${esc(nameOf(r.assessor))}</p><h1>${esc(nameOf(r.resCode))}</h1></div>
@@ -352,6 +368,7 @@ const V={
   <dl>${F.items.map((q,i)=>`<dt>${short(q)}</dt><dd>${r.scores[i]==="NA"?"N/A":r.scores[i]}</dd>`).join("")}</dl><hr>
   <div class="rog">${ro(F,r.f||{title:r.title})}</div>
   ${F.texts.filter(([k])=>r.t&&r.t[k]).map(([k,l])=>`<div><div class="muted">${l}</div><div class="txt">${esc(r.t[k])}</div></div>`).join("")}</div>
+  ${role(S.me)==="admin"?`<div style="display:flex;justify-content:flex-end">${S.confirm===r.id?`<button class="small danger" data-delyes="${r.id}">ยืนยันลบใบนี้</button>`:`<button class="small" data-del="${r.id}">ลบใบประเมินนี้</button>`}</div>`:""}
   <div class="bar"><div><button class="primary" style="flex:1" data-home>กลับหน้าแรก</button></div></div>`},
  person:(me)=>{const c=me||S.person,R=RES[c],ds=doneOf(c);
   const k=S.pt&&ds.some(r=>r.type===S.pt)?S.pt:(KS.find(t=>ds.some(r=>r.type===t))||"jc"),F=FORMS[k],rs=ds.filter(r=>r.type===k).sort((a,b)=>a.date<b.date?1:-1),mx=k==="clin"?9:20;
@@ -401,7 +418,7 @@ function dash(){const seg=`<div class="seg">${years().map(([k,l])=>`<button data
  const cs=Object.keys(RES).filter(c=>RES[c].y===S.yr);
  return seg+cs.map(c=>{const ds=doneOf(c);return `<button class="card pcard" data-person="${c}"><span class="idrow">${av(c)}<span class="nm"><b>${esc(plain(c))}</b><span class="muted">${c}</span></span><span class="chev" aria-hidden="true">›</span></span>
   <span class="trio">${KS.map(t=>{const a=avg(ds.filter(r=>r.type===t).map(nat));return `<span class="ty-${t}"><span class="tn2">${FORMS[t].sh}</span><b>${a==null?"–":fa(t,a)}</b><small>${acts(c,t)} ครั้ง</small></span>`}).join("")}</span></button>`}).join("")+`<p class="muted" style="font-size:.76rem;text-align:center">คะแนนเฉลี่ย: Grand round เต็ม 9 หัวข้ออื่นเต็ม 100</p>`}
-function render(){const a=document.getElementById("app");a.className=S.view==="form"?"ty-"+S.type:"";a.innerHTML=V[S.view]()}
+function render(){const a=document.getElementById("app");a.className=S.view==="form"?"ty-"+S.type+(S.draft&&S.draft.locked?" locked":""):"";a.innerHTML=V[S.view]()}
 function keep(){const y=scrollY;render();scrollTo(0,y)}
 function key(k){if(S.view!=="login")return;
  if(k==="del"){S.code=S.code.slice(0,-1);S.err=""}
@@ -410,14 +427,14 @@ function key(k){if(S.view!=="login")return;
   S.err=S.code?"ไม่พบรหัส "+S.code+" กรุณาตรวจสอบอีกครั้ง":"กรุณาใส่รหัสประจำตัว"}
  else if(S.code.length<MAXLEN){S.code+=k;S.err=""}
  render()}
-function setScore(i,v){const d=S.draft,was=d.touched[i];d.scores[i]=Math.max(0,Math.min(20,v));d.touched[i]=true;
+function setScore(i,v){const d=S.draft;if(d.locked)return;const was=d.touched[i];d.scores[i]=Math.max(0,Math.min(20,v));d.touched[i]=true;
  if(S.err||(S.miss&&!was)){S.err="";keep();return}
  const o=document.getElementById("o-"+i);if(!o){keep();return}
  o.firstChild.textContent=d.scores[i];document.getElementById("b-"+i).style.width=d.scores[i]*5+"%";document.getElementById("sc-"+i).setAttribute("aria-valuenow",d.scores[i]);
  const t=total(S.type,d.scores);document.getElementById("tot").textContent=totalText(S.type,t);document.getElementById("lvl").textContent=level(S.type,t)||"คะแนนรวม"}
 const bump=(i,dv)=>setScore(i,S.draft.touched[i]?S.draft.scores[i]+dv:15);
 let HOLD=null,HELD=false;const unhold=()=>{clearTimeout(HOLD);clearInterval(HOLD);HOLD=null};
-document.addEventListener("pointerdown",e=>{if(S.view!=="form"||!e.target.closest)return;
+document.addEventListener("pointerdown",e=>{if(S.view!=="form"||!e.target.closest||(S.draft&&S.draft.locked))return;
  const b=e.target.closest("[data-step]");
  if(b){const i=+b.dataset.step,dv=+b.dataset.dv;HELD=false;unhold();HOLD=setTimeout(()=>{HELD=true;bump(i,dv);HOLD=setInterval(()=>bump(i,dv),90)},450);return}
  const h=e.target.closest("[data-bar]");if(!h)return;const i=+h.dataset.bar;
@@ -453,9 +470,10 @@ document.addEventListener("click",e=>{const b=e.target.closest("button")||e.targ
  else if(ds.self)start("jc",null,ds.self);
  else if(ds.ftype){if(ds.ftype!==S.type){const keepT=d.f.title;start(ds.ftype,null,d.resCode);if(keepT)S.draft.f.title=keepT;render()}}
  else if(ds.job){const r=S.reqs.find(r=>r.id===ds.job);start(r.type,r)}
- else if(ds.open)go("detail",{open:ds.open,saved:false});
- else if(ds.chip){S.err="";d.f[ds.chip]=ds.v;keep()}
- else if(ds.sc){S.err="";d.scores[+ds.sc]=ds.v==="NA"?"NA":+ds.v;keep()}
+ else if(ds.open){const r=S.reqs.find(x=>x.id===ds.open);if(r&&role(S.me)==="staff"&&r.status==="done"&&r.assessor===S.me)editDone(r);else go("detail",{open:ds.open,saved:false})}
+ else if("unlock" in ds){d.locked=false;keep()}
+ else if(ds.chip){if(d&&d.locked)return;S.err="";d.f[ds.chip]=ds.v;keep()}
+ else if(ds.sc){if(d.locked)return;S.err="";d.scores[+ds.sc]=ds.v==="NA"?"NA":+ds.v;keep()}
  else if(ds.step){if(HELD){HELD=false;return}bump(+ds.step,+ds.dv)}
  else if(ds.qd){S.qd=S.qd===+ds.qd?null:+ds.qd;keep()}
  else if("fb" in ds){S.fb=true;keep()}
@@ -464,7 +482,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("button")||e.targ
    else{const c=(F.chips||[]).find(([k])=>!d.f[k]);if(c)m="กรุณาเลือก"+c[1]}
    if(m){S.err=m;S.miss=true;keep();const el=document.querySelector(".miss");if(el)el.scrollIntoView({block:"center"});return}
    const id=d.reqId||newId();
-   put({id,group:d.group||id,type:S.type,resCode:d.resCode,date:d.date,title:d.f.title||"",assessor:S.me,resName:nameOf(d.resCode),assessorName:nameOf(S.me),status:"done",f:d.f,scores:d.scores,t:d.t,s20:true,doneAt:new Date().toISOString()});
+   put({id,group:d.group||id,type:S.type,resCode:d.resCode,date:d.date,title:d.f.title||"",assessor:S.me,resName:nameOf(d.resCode),assessorName:nameOf(S.me),status:"done",f:d.f,scores:d.scores,t:d.t,s20:true,doneAt:d.edit&&d.edit.doneAt||new Date().toISOString(),...(d.edit?{editedAt:new Date().toISOString()}:{})});
    go("detail",{open:id,draft:null,saved:true})}
  else if("new" in ds)go("rnew",{nw:{type:"",f:{},date:today(),as:[],res:""}});
  else if(ds.ntype){S.nw.type=ds.ntype;S.err="";keep()}
@@ -485,7 +503,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("button")||e.targ
      P--;W++;S.sending=false;back({note:"ส่งถึงอาจารย์ "+rs.length+" ท่านเรียบร้อยแล้ว"})})
     .catch(e=>{P--;W++;S.sending=false;if(S.view==="rnew"){S.err="ส่งไม่สำเร็จ กรุณากดส่งอีกครั้ง (กดซ้ำได้ ระบบไม่สร้างใบซ้ำ)";keep()}})}
  else if(ds.del){S.confirm=ds.del;keep()}
- else if(ds.delyes){del(ds.delyes);S.confirm=null;keep()}
+ else if(ds.delyes){del(ds.delyes);S.confirm=null;S.view==="detail"?home():keep()}
  else if(ds.add){S.adding=ds.add;keep()}
  else if("addx" in ds){S.adding=null;keep()}
  else if(ds.addto){const r=S.reqs.find(x=>x.group===ds.addto);put({id:newId(),group:r.group,type:r.type,resCode:r.resCode,date:r.date,title:r.title,f:r.f||{title:r.title},assessor:ds.c,resName:nameOf(r.resCode),assessorName:nameOf(ds.c),status:"pending"});keep()}
