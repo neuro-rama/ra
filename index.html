@@ -8,7 +8,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="NeuroRA">
 <title>NeuroRA evaluation</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>html,body{margin:0}:root{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
@@ -236,6 +236,34 @@ select{font:inherit;color:var(--ink);background:var(--sheet);border:1px solid va
 #app.locked .stp,#app.locked .scale,#app.locked .fhead .chips,#app.locked textarea,#app.locked .fhead input{pointer-events:none;opacity:.6}
 .lockn{font-size:.8rem;color:var(--muted);background:var(--soft);border-radius:10px;padding:8px 12px}
 input,textarea,select{font-size:16px!important}
+#app.v-login{min-height:100vh;min-height:100dvh;justify-content:center;padding-block:24px 48px;gap:0}
+.v-login .lhead{text-align:center;margin-bottom:36px}
+.v-login .lhead h1{font-size:clamp(1.45rem,7.6vw,1.9rem);white-space:nowrap;line-height:1.15;margin:0;letter-spacing:-.01em}
+.v-login .lhead h1 span{font-weight:300;color:var(--muted)}
+.v-login .lhead p{margin:4px 0 0}
+.v-login .lcap{text-align:center;margin:0}
+.v-login .code{margin:4px 0 22px;min-height:3.2rem;display:flex;align-items:center;justify-content:center}
+.v-login .pad{gap:12px;max-width:300px}
+.v-login .pad button{min-height:62px}
+.v-login .err,.v-login [role=status]{margin:0 0 14px}
+.v-login .nw{white-space:nowrap;display:inline-block}
+.v-login .dig{gap:14px;letter-spacing:0;padding:0}
+.v-login .dig span{width:22px;text-align:center}
+.v-login .dig .e{color:var(--muted);font-family:var(--body);font-weight:400}
+.hav{padding:0;border:0;background:none;min-height:0;flex:none;border-radius:50%;line-height:0}
+.top>.hav .av{width:38px;height:38px;font-size:1rem}
+.av.ph{padding:0;overflow:hidden;background:var(--soft)}
+.av img{width:100%;height:100%;object-fit:cover;display:block}
+.jobc .av.ph{box-shadow:0 0 0 2px var(--tc)}
+.ov{position:fixed;inset:0;background:rgba(17,24,39,.4);z-index:50}
+.sheet{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:520px;background:var(--sheet);border-radius:22px 22px 0 0;padding:22px 20px calc(22px + env(safe-area-inset-bottom,0px));z-index:51;display:flex;flex-direction:column;gap:10px;text-align:center;box-shadow:0 -6px 24px rgba(17,24,39,.15)}
+.pfbig{display:flex;justify-content:center}.pfbig .av{width:112px;height:112px;font-size:2.6rem}
+.sheet .muted{margin-bottom:6px}
+#app.sw-l>*:not(.top):not(.tabs){animation:swl .22s ease-out}
+#app.sw-r>*:not(.top):not(.tabs){animation:swr .22s ease-out}
+@keyframes swl{from{transform:translateX(28px);opacity:.3}to{transform:none;opacity:1}}
+@keyframes swr{from{transform:translateX(-28px);opacity:.3}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){#app.sw-l>*,#app.sw-r>*{animation:none!important}}
 </style>
 <div id="app"></div>
 <script>
@@ -284,7 +312,12 @@ const nameOf=c=>STAFF[c]||(RES[c]?RES[c].t+RES[c].f+" "+RES[c].l:ADMIN[c]||NM[c]
 const OLDT={note:"ข้อเสนอแนะ",reflect:"การสะท้อนการเรียนรู้",plan:"แผนพัฒนาการเรียนรู้"};
 const tList=(F,t)=>t?[...F.texts,...Object.keys(OLDT).filter(k=>!F.texts.some(([x])=>x===k)).map(k=>[k,OLDT[k]])].filter(([k])=>t[k]):[];
 const plain=c=>RES[c]?RES[c].f+" "+RES[c].l:nameOf(c).replace(/^(นพ\.|พญ\.|นาย|นาง(สาว)?)\s*/,"");
-const av=c=>`<span class="av" aria-hidden="true">${esc(RES[c]?RES[c].f[0]:(STAFF[c]||plain(c)||"?").replace(/^.*[.]\s*/,"")[0]||"?")}</span>`;
+let PH={},PHV=null,PHL=false;try{const o=JSON.parse(ls.get("nra_ph")||"null");if(o){PH=o.p||{};PHV=o.v}}catch(e){}
+const okImg=s=>typeof s==="string"&&/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(s);
+const ini=c=>esc(RES[c]?RES[c].f[0]:(STAFF[c]||plain(c)||"?").replace(/^.*[.]\s*/,"")[0]||"?");
+const av=c=>okImg(PH[c])?`<span class="av ph" aria-hidden="true"><img src="${PH[c]}" alt=""></span>`:`<span class="av" aria-hidden="true">${ini(c)}</span>`;
+function savePH(){ls.set("nra_ph",JSON.stringify({v:PHV,p:PH}))}
+function getPhotos(){if(!GAS||PHL||!S.me)return;PHL=true;call({code:S.me,action:"photos"}).then(x=>{PHL=false;if(x&&x.ok){PH=x.photos||{};PHV=x.pv;savePH();if(S.view!=="login"&&S.view!=="form")keep()}}).catch(()=>{PHL=false})}
 const short=q=>q.split(/ ครอบคลุม| ใช้ข้อมูล| สามารถ| สไลด์| นำเสนอได้/)[0];
 const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
 const total=(type,sc)=>{if(type!=="clin")return sc.reduce((a,b)=>a+(b||0),0);const a=avg(sc.filter(x=>typeof x==="number"));return a==null?0:Math.round(a*10)/10};
@@ -308,7 +341,7 @@ function del(id){S.reqs=S.reqs.filter(x=>x.id!==id);persist();
  if(DB)DB.collection("requests").doc(id).delete().catch(()=>{S.warn="ลบไม่สำเร็จ ลองอีกครั้ง";render()})}
 function go(view,x={}){Object.assign(S,{view,note:"",qd:null,miss:false,fb:false,err:"",confirm:null,adding:null},x);render();scrollTo(0,0)}
 const home=()=>go({res:"rhome",admin:"ahome"}[role(S.me)]||"thome");
-function load(x){STAFF=x.staff;RES=x.res;ADMIN=x.admin;S.reqs=x.requests.map(norm);S.reqs.forEach(r=>{if(r.resName)NM[r.resCode]=r.resName;if(r.assessorName)NM[r.assessor]=r.assessorName})}
+function load(x){if(x.pv!=null&&String(x.pv)!==String(PHV))setTimeout(getPhotos,50);STAFF=x.staff;RES=x.res;ADMIN=x.admin;S.reqs=x.requests.map(norm);S.reqs.forEach(r=>{if(r.resName)NM[r.resCode]=r.resName;if(r.assessorName)NM[r.assessor]=r.assessorName})}
 let JOB=null;const readJob=()=>{const m=location.hash.match(/j=([^&]+)/);if(m)JOB=decodeURIComponent(m[1])};readJob();
 function openJob(){if(!JOB||!S.me)return;const id=JOB;JOB=null;try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
  if(role(S.me)!=="staff")return;const r=S.reqs.find(x=>x.id===id);
@@ -327,14 +360,14 @@ function editDone(r){const F=FORMS[r.type];
 function start(type,req,res){const F=FORMS[type];
  go("form",{type,draft:{reqId:req?req.id:null,group:req?req.group:null,date:req?req.date:today(),resCode:req?req.resCode:res,
   f:req?{title:req.title,...(req.f||{})}:{},scores:F.items.map(()=>F.kind==="slider"?0:null),touched:F.items.map(()=>false),t:{}}})}
-const hdr=t=>`<div class="top"><div style="min-width:0">${t?`<p class="muted">${esc(nameOf(S.me))}</p><h1>${t}</h1>`:`<h1>${esc(nameOf(S.me))}</h1>`}</div><button class="ghost" data-out>Sign out</button></div>`;
+const hdr=t=>`<div class="top"><button class="hav" data-pf="${S.me}" aria-label="รูปโปรไฟล์ของฉัน">${av(S.me)}</button><div style="min-width:0">${t?`<p class="muted">${esc(nameOf(S.me))}</p><h1>${t}</h1>`:`<h1>${esc(nameOf(S.me))}</h1>`}</div><button class="ghost" data-out>Sign out</button></div>`;
 const warn=()=>(S.note?`<div class="okb" role="status">${S.note}</div>`:"")+(S.warn?`<div class="err">${S.warn}</div>`:"");
 const tabs=(attr,cur,items)=>`<div class="tabs" style="grid-template-columns:repeat(${items.length},minmax(0,1fr))">${items.map(([k,l,c])=>`<button data-${attr}="${k}" class="${c||""}" aria-current="${cur===k}">${l}</button>`).join("")}</div>`;
 const recCard=r=>`<button class="card ty-${r.type}" data-open="${r.id}"><span class="nm"><b>${esc(plain(r.resCode))}</b><span class="muted"><span class="tn2" style="font-size:.82rem">${FORMS[r.type].sh}</span> · ${r.date}</span></span><span class="n">${totalText(r.type,nat(r))}</span></button>`;
 const V={
- login:()=>`<div style="padding-top:28px;text-align:center"><h1>NeuroRA evaluation</h1><p class="muted">ประเมินแพทย์ประจำบ้าน</p></div>
-  <p class="muted" style="text-align:center">รหัสประจำตัว</p>
-  <div class="code" aria-live="polite">${S.code||'<span class="muted">– – – – – –</span>'}</div>
+ login:()=>`<div class="lhead"><h1>NeuroRA <span>evaluation</span></h1><p class="muted"><span class="nw">ประเมินแพทย์ประจำบ้าน</span> <span class="nw">สาขาประสาทวิทยา</span></p></div>
+  <p class="muted lcap">รหัสประจำตัว</p>
+  <div class="code dig" aria-live="polite" aria-label="กรอกแล้ว ${(S.code||"").length} จาก 6 หลัก">${[0,1,2,3,4,5].map(i=>(S.code||"")[i]?`<span>${S.code[i]}</span>`:'<span class="e">–</span>').join("")}</div>
   ${S.busy?`<p class="muted" style="text-align:center" role="status">${S.slow?"กำลังเชื่อมต่อ… ระบบกำลังเริ่มทำงาน อาจใช้เวลาสักครู่":"กำลังตรวจสอบ…"}</p>`:""}${S.err?`<div class="err" role="alert">${S.err}</div>`:""}
   <div class="pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-d="${n}">${n}</button>`).join("")}<button data-d="del" aria-label="ลบ">⌫</button><button data-d="0">0</button><button data-d="ok" class="primary">Enter</button></div>`,
  thome:()=>{const mine=S.reqs.filter(r=>r.assessor===S.me),todo=mine.filter(r=>r.status==="pending"&&!r.closedYear).sort((a,b)=>a.date<b.date?-1:1),done=mine.filter(r=>r.status==="done").sort((a,b)=>(b.doneAt||"")<(a.doneAt||"")?-1:1);
@@ -382,7 +415,7 @@ const V={
   <div class="bar"><div><button class="primary" style="flex:1" data-home>กลับหน้าแรก</button></div></div>`},
  person:(me)=>{const c=me||S.person,R=RES[c],ds=doneOf(c);
   const k=S.pt&&ds.some(r=>r.type===S.pt)?S.pt:(KS.find(t=>ds.some(r=>r.type===t))||"jc"),F=FORMS[k],rs=ds.filter(r=>r.type===k).sort((a,b)=>a.date<b.date?1:-1),mx=k==="clin"?9:20;
-  return (me?"":`<div class="idrow">${av(c)}<div><h1>${esc(plain(c))}</h1><p class="muted">${c} · ${R.y}</p></div></div>`)+
+  return (me?"":`<div class="idrow">${role(S.me)==="admin"?`<button class="hav" data-pf="${c}" aria-label="เปลี่ยนรูปของ ${esc(plain(c))}">${av(c)}</button>`:av(c)}<div><h1>${esc(plain(c))}</h1><p class="muted">${c} · ${R.y}</p></div></div>`)+
   `<div class="tcards">${KS.map(t=>{const x=ds.filter(r=>r.type===t),a=avg(x.map(nat));return `<button class="card tcard ty-${t}" data-pt="${t}" aria-pressed="${t===k}"><span class="tn2">${FORMS[t].sh}</span><b>${a==null?"–":fa(t,a)}<small class="of">/${t==="clin"?9:100}</small></b><span>${x.length} ครั้ง</span></button>`}).join("")}</div>`+
   (rs.length?`<div class="card pbox ty-${k}"><div class="top"><b class="tn2">${F.name}</b><span class="muted">${trend(k,rs)}</span></div>${radar(F,rs,mx)}
    <p class="muted" style="font-size:.75rem;text-align:center">คะแนนเฉลี่ยรายข้อ เต็ม ${mx}</p>
@@ -428,7 +461,42 @@ function dash(){const seg=`<div class="seg">${years().map(([k,l])=>`<button data
  const cs=Object.keys(RES).filter(c=>RES[c].y===S.yr);
  return seg+cs.map(c=>{const ds=doneOf(c);return `<button class="card pcard" data-person="${c}"><span class="idrow">${av(c)}<span class="nm"><b>${esc(plain(c))}</b><span class="muted">${c}</span></span><span class="chev" aria-hidden="true">›</span></span>
   <span class="trio">${KS.map(t=>{const a=avg(ds.filter(r=>r.type===t).map(nat));return `<span class="ty-${t}"><span class="tn2">${FORMS[t].sh}</span><b>${a==null?"–":fa(t,a)}</b><small>${acts(c,t)} ครั้ง</small></span>`}).join("")}</span></button>`}).join("")+`<p class="muted" style="font-size:.76rem;text-align:center">คะแนนเฉลี่ย: Grand round เต็ม 9 หัวข้ออื่นเต็ม 100</p>`}
-function render(){const a=document.getElementById("app");a.className=S.view==="form"?"ty-"+S.type+(S.draft&&S.draft.locked?" locked":""):"";a.innerHTML=V[S.view]()}
+function render(){const a=document.getElementById("app");a.className=S.view==="login"?"v-login":S.view==="form"?"ty-"+S.type+(S.draft&&S.draft.locked?" locked":""):"";a.innerHTML=V[S.view]()+(S.pf?pfSheet():"")}
+
+function pfSheet(){const c=S.pf,has=okImg(PH[c]),mine=c===S.me;
+ return `<div class="ov" data-pfx></div><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pf-t">
+ <div class="pfbig">${av(c)}</div><b id="pf-t">${mine?"รูปโปรไฟล์ของฉัน":esc(nameOf(c))}</b>
+ <p class="muted">รูปจะแสดงแทนวงกลมตัวอักษรในรายชื่อ ทุกคนในแอปเห็นได้</p>
+ ${S.pfErr?`<div class="err" role="alert">${S.pfErr}</div>`:""}
+ <input type="file" id="pf-in" accept="image/*" hidden>
+ <button class="primary" data-pfpick ${S.pfBusy?"disabled":""}>${S.pfBusy?"กำลังบันทึก…":has?"เปลี่ยนรูป":"เลือกรูป"}</button>
+ ${has&&!S.pfBusy?`<button class="danger" data-pfdel>ลบรูป</button>`:""}
+ <button data-pfx>ปิด</button></div>`}
+function shrink(file){return new Promise((ok,no)=>{const u=URL.createObjectURL(file),im=new Image();
+ im.onload=()=>{const w=im.naturalWidth,h=im.naturalHeight,s=Math.min(w,h),cv=document.createElement("canvas");cv.width=cv.height=192;const g=cv.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,192,192);g.drawImage(im,(w-s)/2,(h-s)/2,s,s,0,0,192,192);URL.revokeObjectURL(u);
+  let q=.85,d=cv.toDataURL("image/jpeg",q);while(d.length>40000&&q>.35){q-=.1;d=cv.toDataURL("image/jpeg",q)}okImg(d)?ok(d):no()};
+ im.onerror=()=>{URL.revokeObjectURL(u);no()};im.src=u})}
+function setPhoto(c,img){const old=PH[c];if(img)PH[c]=img;else delete PH[c];S.pfErr="";
+ if(!GAS){savePH();S.pf=null;keep();return}
+ S.pfBusy=true;keep();
+ call({code:S.me,action:"photo",target:c,img:img||""},45000).then(x=>{if(!x||!x.ok)throw 0;PHV=x.pv;savePH();S.pfBusy=false;S.pf=null;keep()})
+  .catch(()=>{if(old)PH[c]=old;else delete PH[c];S.pfBusy=false;S.pfErr="บันทึกรูปไม่สำเร็จ กรุณาลองอีกครั้ง";keep()})}
+document.addEventListener("change",e=>{if(e.target.id!=="pf-in"||!e.target.files||!e.target.files[0])return;const c=S.pf;
+ shrink(e.target.files[0]).then(d=>setPhoto(c,d)).catch(()=>{S.pfErr="เปิดรูปนี้ไม่ได้ ลองเลือกรูปอื่น";keep()})});
+document.addEventListener("click",e=>{if(!S.pf||!e.target.closest)return;const t=e.target.closest("[data-pfx],[data-pfpick],[data-pfdel]");
+ if(e.target.matches(".ov")||(t&&"pfx" in t.dataset)){if(S.pfBusy)return;S.pf=null;S.pfErr="";keep();return}
+ if(!t)return;if("pfpick" in t.dataset){const i=document.getElementById("pf-in");if(i)i.click()}else if("pfdel" in t.dataset)setPhoto(S.pf,null)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&S.pf&&!S.pfBusy){S.pf=null;keep()}});
+// ปัดซ้าย/ขวาเพื่อเปลี่ยน tab
+const TABS={thome:["tab",["todo","self","hist","dash"]],ahome:["tab",["dash","hist","pend"]],rhome:["rtab",["list","me"]]};
+let SW=null;
+const hscroll=el=>{for(;el&&el!==document.body;el=el.parentElement){const o=getComputedStyle(el).overflowX;if((o==="auto"||o==="scroll")&&el.scrollWidth>el.clientWidth+2)return true}return false};
+document.addEventListener("touchstart",e=>{SW=null;if(e.touches.length!==1||!TABS[S.view]||S.pf)return;const t=e.target;
+ if(t.closest&&t.closest("input,textarea,select,[data-bar]"))return;if(hscroll(t))return;const p=e.touches[0];SW={x:p.clientX,y:p.clientY,t:Date.now()}},{passive:true});
+document.addEventListener("touchend",e=>{if(!SW)return;const p=e.changedTouches[0],dx=p.clientX-SW.x,dy=p.clientY-SW.y,dt=Date.now()-SW.t;SW=null;
+ if(dt>800||Math.abs(dx)<60||Math.abs(dx)<Math.abs(dy)*1.6)return;const T=TABS[S.view];if(!T)return;
+ const L=T[1],i=L.indexOf(S[T[0]]),j=i+(dx<0?1:-1);if(i<0||j<0||j>=L.length)return;
+ go(S.view,{[T[0]]:L[j]});const a=document.getElementById("app");a.classList.add(dx<0?"sw-l":"sw-r");setTimeout(()=>a.classList.remove("sw-l","sw-r"),300)},{passive:true});
 function keep(){const y=scrollY;render();scrollTo(0,y)}
 function key(k){if(S.view!=="login")return;
  if(k==="del"){S.code=S.code.slice(0,-1);S.err=""}
@@ -467,6 +535,8 @@ document.addEventListener("input",e=>{const el=e.target,d=S.draft;
   el.style.setProperty("--p",el.value*5+"%");document.getElementById("o-"+i).firstChild.textContent=el.value;
   const t=total(S.type,d.scores);document.getElementById("tot").textContent=totalText(S.type,t);document.getElementById("lvl").textContent=level(S.type,t)||"คะแนนรวม"}});
 document.addEventListener("click",e=>{const b=e.target.closest("button")||e.target.closest("[data-tog]");if(!b)return;const ds=b.dataset,d=S.draft;
+ if(S.pf)return;
+ if(ds.pf){S.pf=ds.pf;S.pfErr="";keep();return}
  if(ds.d){key(ds.d);return}
  if("out" in ds){S.me=null;ls.set("nra_me",null);go("login",{code:""})}
  else if("home" in ds)home();
