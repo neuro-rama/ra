@@ -275,7 +275,8 @@ input,textarea,select{font-size:16px!important}
 .tpick.rpick button{padding:6px 8px 6px 12px;min-height:44px;gap:6px;border-radius:12px}
 .tpick.rpick .tn{font-size:.9rem;line-height:1.25;overflow-wrap:anywhere}
 .tpick.rpick .ck{width:22px;height:22px;font-size:.8rem}
-.rpbtn{align-self:flex-end;margin-bottom:-4px}
+.rpbtn{display:flex;align-items:center;justify-content:center;gap:10px;min-height:52px;border-radius:14px;font-weight:600;margin-top:4px}
+.rpbtn .pdfi{flex:none}
 .rp-ctl{display:flex;flex-direction:column;gap:10px}
 .rpt{display:flex;flex-direction:column;gap:16px}
 .rp-page{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 20px;display:flex;flex-direction:column;gap:12px;color:#111827}
@@ -462,7 +463,8 @@ const totalText=(type,t)=>type==="clin"?`${t.toFixed(1)} / 9`:`${t} / 100`;
 function level(type,t){if(type==="clin")return t>=7?"Superior":t>=4?"Satisfactory":t>0?"Unsatisfactory":"";
  return t>=90?"ดีเยี่ยม":t>=80?"ดีมาก":t>=70?"ดี":t>=60?"พอใช้":"ควรปรับปรุง"}
 const doneOf=c=>S.reqs.filter(r=>r.status==="done"&&r.resCode===c);
-const acts=(c,t)=>new Set(S.reqs.filter(r=>r.resCode===c&&r.type===t).map(r=>r.group)).size;
+const acts=(c,t)=>new Set(S.reqs.filter(r=>r.resCode===c&&r.type===t).map(r=>t==="clin"?r.date:(r.group||r.id))).size;
+const sessions=t=>new Set(S.reqs.filter(r=>r.type===t).map(r=>r.date)).size,actU=t=>t==="clin"?"ครั้ง":"เรื่อง";
 const ro=(F,f,h)=>[...F.head,...(h?[]:F.chips||[])].filter(([k])=>f[k]&&String(f[k]).length).map(([k,l])=>`<div><div class="muted">${l}</div><div>${esc(f[k])}</div></div>`).join("");
 let W=0,P=0,Q=Promise.resolve();
 const svEl=()=>{let e=document.getElementById("sv");if(!e){e=document.createElement("div");e.id="sv";e.setAttribute("role","status");document.body.appendChild(e)}e.textContent=P?"กำลังบันทึก…":"";e.style.display=P?"block":"none"};
@@ -523,8 +525,8 @@ const V={
    body=`<div class="chips hfc"><button data-hf="all" aria-pressed="${S.hf==="all"}">All</button>${KS.map(k=>`<button data-hf="${k}" class="tyb ty-${k}" aria-pressed="${S.hf===k}">${k==="jc"?"Journal":FORMS[k].sh}</button>`).join("")}</div>`+(l.length?l.map(recCard).join(""):`<div class="empty">ยังไม่มีใบที่ประเมินแล้ว</div>`)}
   else if(S.tab==="pend")body=`<button class="primary" data-new>+ ส่งใบประเมินแทน resident</button>`+(pend.length?pend.map(r=>`<div class="card ty-${r.type}" style="display:flex;align-items:center;gap:10px"><span class="nm"><b>${esc(plain(r.resCode))}</b><span class="muted"><span class="tn2" style="font-size:.82rem">${FORMS[r.type].sh}</span> · ${r.date}</span><span class="muted">รอ ${esc(nameOf(r.assessor))}${!r.closedYear&&r.remindedAt?` · แจ้งแล้ว ${r.remindedAt.slice(0,10)}`:""}</span>${r.closedYear?`<span class="need">ปิดปี ${r.closedYear} · ประเมินไม่ได้แล้ว</span>`:""}</span><span style="display:flex;flex-direction:column;gap:6px;flex:none">${S.confirm===r.id?`<button class="small danger" data-delyes="${r.id}">ยืนยันลบ</button>`:`${r.closedYear?"":`<button class="small" data-remind="${r.id}">${r.remindedAt?"แจ้งอีกครั้ง":"แจ้งเตือน"}</button>`}<button class="small" data-del="${r.id}">ลบ</button>`}</span></div>`).join(""):`<div class="empty">ไม่มีใบที่ค้างประเมิน</div>`);
   else if(S.tab==="nudge")body=nudgeView();
-  else body=`<button class="small rpbtn" data-report>ออกรายงาน PDF</button>`+dash();
-  return hdr()+tabs("tab",S.tab,[["dash","ภาพรวม"],["hist","ประเมินแล้ว"],["pend","ค้างประเมิน"+(pend.length?` <span class="badge">${pend.length}</span>`:"")],["nudge","เตือนส่ง"]])+body+(S.tab==="nudge"?"":warn())},
+  else body=dash()+`<button class="rpbtn" data-report><svg class="pdfi" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 2v6h6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><rect x="2.5" y="12" width="15" height="7.5" rx="1.5" fill="#b4472f"/><text x="10" y="17.9" text-anchor="middle" font-size="5.6" font-weight="700" fill="#fff" font-family="Arial,sans-serif">PDF</text></svg><span>สรุปการประเมิน PDF</span></button>`;
+  return hdr()+tabs("tab",S.tab,[["dash","ภาพรวม"],["hist","ประเมินแล้ว"],["pend","ค้างประเมิน"+(pend.length?` <span class="badge">${pend.length}</span>`:"")],["nudge","แจ้งเตือน"]])+body+(S.tab==="nudge"?"":warn())},
  form:()=>{const F=FORMS[S.type],d=S.draft,t=total(S.type,d.scores),any=F.kind==="slider"?d.touched.some(Boolean):d.scores.some(x=>typeof x==="number");
   return `<div class="top"><button class="ghost" data-home>‹ กลับ</button><span class="muted">${esc(nameOf(S.me))}</span></div>
   ${d.edit?`<p class="lockn">${d.locked?"ใบนี้ประเมินแล้ว กด \"แก้ไข\" ด้านล่างเพื่อแก้คะแนน":"กำลังแก้ไข แก้เสร็จแล้วกด \"บันทึกการแก้ไข\""}</p>`:""}${d.reqId?`<h1 class="tn2">${F.name}</h1>`:tabs("ftype",S.type,KS.map(k=>[k,FORMS[k].sh,"ty-"+k]))}
@@ -574,7 +576,7 @@ const V={
  report:()=>{const R=S.rp,D=rpData(),cur=`ปีการศึกษาปัจจุบัน (ข้อมูลถึง ${thd(today())})`;
   if(R.y!=="cur"&&!D&&!R.loading&&!R.err)setTimeout(()=>loadArc(R.y),0);
   const label=R.y==="cur"?cur:`ปีการศึกษา ${R.y}`;
-  return `<div class="top noprint"><button class="ghost" data-home>‹ กลับ</button><span class="muted">รายงาน PDF</span></div>
+  return `<div class="top noprint"><button class="ghost" data-home>‹ กลับ</button><span class="muted">สรุปการประเมิน PDF</span></div>
   <div class="noprint rp-ctl"><label for="rp-y">ปีการศึกษา<select id="rp-y" data-rpy><option value="cur" ${R.y==="cur"?"selected":""}>${cur}</option>${YEARS.map(y=>`<option value="${y}" ${R.y===y?"selected":""}>ปีการศึกษา ${y}</option>`).join("")}</select></label>
   <button class="primary" data-print ${D&&!R.busy?"":"disabled"}>${R.busy?"กำลังสร้าง PDF…":"บันทึกเป็น PDF"}</button><p class="muted" style="font-size:.8rem">${IOS()?"แอปจะสร้างไฟล์ PDF แล้วเปิดหน้าแชร์ เลือก \"บันทึกลงในไฟล์\" หรือส่งต่อได้เลย":"กดแล้วเลือก Save as PDF / บันทึกเป็น PDF"}</p></div>
   ${R.busy?`<div class="okb noprint" role="status">${R.busy}</div>`:""}
@@ -602,12 +604,12 @@ function radar(F,rs,mx,big){const n=F.items.length,W=350,H=big?250:236,cx=175,cy
   return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="var(--tc)" stroke="var(--sheet)" stroke-width="2"><title>${F.sn[i]}: ${v[i]==null?"N/A":v[i].toFixed(1)} / ${mx}</title></circle><text x="${lx.toFixed(1)}" y="${(ly-2).toFixed(1)}" text-anchor="${an}" class="rl">${F.sn[i]}</text><text x="${lx.toFixed(1)}" y="${(ly+12).toFixed(1)}" text-anchor="${an}" class="rv">${v[i]==null?"N/A":v[i].toFixed(1)}</text>`}).join("")}</svg>`}
 function dash(){const seg=`<div class="seg">${years().map(([k,l])=>`<button data-yr="${k}" aria-pressed="${S.yr===k}">${l}</button>`).join("")}</div>`;
  if(S.yr==="all"){const cs=Object.keys(RES),k=S.dt,mx=Math.max(1,...cs.map(c=>acts(c,k)));
-  return seg+`<div class="tcards">${KS.map(t=>`<button class="card tcard ty-${t}" data-dt="${t}" aria-pressed="${t===k}"><span class="tn2">${FORMS[t].sh}</span><b>${cs.reduce((a,c)=>a+acts(c,t),0)}</b><span>ครั้ง รวมทุกคน</span></button>`).join("")}</div>
-  <div class="card pbox ty-${k}"><div class="top"><b class="tn2">${FORMS[k].name}</b><span class="muted">จำนวนครั้งที่ทำแล้ว</span></div>
-  ${cs.map(c=>{const n=acts(c,k);return `<div class="brow" title="${esc(plain(c))}: ${n} ครั้ง"><span>${esc(plain(c))}</span><div class="btrack"><i style="width:${n/mx*100}%"></i></div><b class="n">${n}</b></div>`}).join("")}</div>`}
+  return seg+`<div class="tcards">${KS.map(t=>`<button class="card tcard ty-${t}" data-dt="${t}" aria-pressed="${t===k}"><span class="tn2">${FORMS[t].sh}</span><b>${sessions(t)}</b><span>ครั้งที่จัดกิจกรรม</span></button>`).join("")}</div>
+  <div class="card pbox ty-${k}"><div class="top"><b class="tn2">${FORMS[k].name}</b><span class="muted">${k==="clin"?"จำนวนครั้งที่รับการประเมิน":"จำนวนเรื่องที่นำเสนอ"}</span></div>
+  ${cs.map(c=>{const n=acts(c,k);return `<div class="brow" title="${esc(plain(c))}: ${n} ${actU(k)}"><span>${esc(plain(c))}</span><div class="btrack"><i style="width:${n/mx*100}%"></i></div><b class="n">${n}</b></div>`}).join("")}</div>`}
  const cs=Object.keys(RES).filter(c=>RES[c].y===S.yr);
  return seg+cs.map(c=>{const ds=doneOf(c);return `<button class="card pcard" data-person="${c}"><span class="idrow">${av(c)}<span class="nm"><b>${esc(plain(c))}</b><span class="muted">${c}</span></span><span class="chev" aria-hidden="true">›</span></span>
-  <span class="trio">${KS.map(t=>{const a=avg(ds.filter(r=>r.type===t).map(nat));return `<span class="ty-${t}"><span class="tn2">${FORMS[t].sh}</span><b>${a==null?"–":fa(t,a)}</b><small>${acts(c,t)} ครั้ง</small></span>`}).join("")}</span></button>`}).join("")+`<p class="muted" style="font-size:.76rem;text-align:center">คะแนนเฉลี่ย: Grand round เต็ม 9 หัวข้ออื่นเต็ม 100</p>`}
+  <span class="trio">${KS.map(t=>{const a=avg(ds.filter(r=>r.type===t).map(nat));return `<span class="ty-${t}"><span class="tn2">${FORMS[t].sh}</span><b>${a==null?"–":fa(t,a)}</b><small>${acts(c,t)} ${actU(t)}</small></span>`}).join("")}</span></button>`}).join("")+`<p class="muted" style="font-size:.76rem;text-align:center">คะแนนเฉลี่ย: Grand round เต็ม 9 หัวข้ออื่นเต็ม 100</p>`}
 function render(){const a=document.getElementById("app");a.className=S.view==="login"?"v-login":S.view==="form"?"ty-"+S.type+(S.draft&&S.draft.locked?" locked":""):"";a.innerHTML=V[S.view]()+(S.pf?pfSheet():"")}
 
 function pfSheet(){const c=S.pf,has=okImg(PH[c]),mine=c===S.me;
@@ -653,10 +655,9 @@ function getQuota(){if(!GAS||QL)return;QL=true;call({code:S.me,action:"lineq"}).
 function nudgeView(){const n=ndS(),cs=Object.keys(RES),ok=cs.filter(c=>LINKED.has(c)),allOn=ok.length&&ok.every(c=>n.to.includes(c));
  if(QUOTA==null)setTimeout(getQuota,0);
  n.to=n.to.filter(c=>LINKED.has(c));
- return `<p class="muted one">ส่ง LINE เตือนให้ resident ส่งใบประเมิน</p>
- ${S.note?`<div class="okb" role="status">${S.note}</div>`:""}
+ return ` ${S.note?`<div class="okb" role="status">${S.note}</div>`:""}
  <div><label>ประเภท</label><div class="chips chips3" style="margin-top:6px">${KS.map(k=>`<button data-ndt="${k}" class="tyb ty-${k}" aria-pressed="${n.type===k}">${{jc:"Journal",topic:"Topic",clin:"Grand round"}[k]}</button>`).join("")}</div></div>
- <label for="nd-date">วันที่<input id="nd-date" type="date" data-ndd value="${n.date}"></label>
+ <label for="nd-date">วันที่จัดกิจกรรม<input id="nd-date" type="date" data-ndd value="${n.date}"></label>
  <div><div class="top"><label>resident</label><button type="button" class="small" style="white-space:nowrap;flex:none" data-ndall aria-pressed="${!!allOn}" ${ok.length?"":"disabled"}>${allOn?"ล้างทั้งหมด":"All"}</button></div>
  <div class="tpick" style="margin-top:8px">${cs.map(c=>{const on=n.to.includes(c),lk=LINKED.has(c);return `<button data-ndr="${c}" aria-pressed="${on}" ${lk?"":'disabled class="off"'}>${av(c)}<span class="tn">${esc(plain(c))}<span class="sub">${RES[c].y} · ${lk?"เชื่อม LINE แล้ว":'<span class="nolk">ยังไม่เชื่อม LINE</span>'}</span></span><span class="ck" aria-hidden="true">${on?"✓":""}</span></button>`}).join("")}</div></div>
  ${QUOTA&&QUOTA.used!=null?`<p class="muted one" style="font-size:.8rem">LINE เดือนนี้ใช้ไป ${QUOTA.used}${QUOTA.limit?` จาก ${QUOTA.limit}`:""} ข้อความ</p>`:""}
@@ -775,7 +776,7 @@ document.addEventListener("keydown",e=>{
  if(S.view==="login"){if(/^\d$/.test(e.key))key(e.key);else if(e.key==="Backspace")key("del");else if(e.key==="Enter"){e.preventDefault();key("ok")}return}
  if((e.key==="Enter"||e.key===" ")&&e.target.matches&&e.target.matches("[role=button]")){e.preventDefault();e.target.click()}});
 document.addEventListener("input",e=>{const el=e.target,d=S.draft;
- if("ndd" in el.dataset){ndS().date=el.value;return}
+ if("ndd" in el.dataset){const n=ndS();n.date=el.value;n.dm=true;return}
  if(el.dataset.nf&&S.nw){S.nw.f[el.dataset.nf]=el.value;return}
  if(el.dataset.n&&S.nw){S.nw[el.dataset.n]=el.value;if(el.dataset.n==="date")S.nw.dm=true;return}
  if(!d)return;
@@ -787,7 +788,7 @@ document.addEventListener("input",e=>{const el=e.target,d=S.draft;
 document.addEventListener("click",e=>{const b=e.target.closest("button")||e.target.closest("[data-tog]");if(!b)return;const ds=b.dataset,d=S.draft;
  if(S.pf)return;
  if(ds.pf){S.pf=ds.pf;S.pfErr="";keep();return}
- if(ds.ndt){ndS().type=ds.ndt;S.err="";keep();return}
+ if(ds.ndt){const n=ndS();n.type=ds.ndt;if(!n.dm)n.date=actDay(ds.ndt);S.err="";keep();return}
  if("ndall" in ds){const n=ndS(),ok=Object.keys(RES).filter(c=>LINKED.has(c));n.to=ok.every(c=>n.to.includes(c))?[]:ok;S.err="";keep();return}
  if(ds.ndr){const n=ndS(),c=ds.ndr;n.to=n.to.includes(c)?n.to.filter(y=>y!==c):[...n.to,c];S.err="";keep();return}
  if("ndsend" in ds){sendNudge();return}
