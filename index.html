@@ -360,6 +360,16 @@ input,textarea,select{font-size:16px!important}
 .rp-c li::before{background:#9aa1ad!important;opacity:1!important;width:4px!important;height:4px!important;top:.7em!important}
 @media(max-width:560px){.rp-k+.rp-k,.rp-a+.rp-a{border-left:0!important;border-top:1px solid var(--line)}}
 @media print{.rp-k+.rp-k,.rp-a+.rp-a{border-left:1px solid var(--line)!important;border-top:0!important}}
+
+/* หน้ากระดาษสำหรับสร้าง PDF บน iPhone (นอกจอ) */
+.rp-cap{position:fixed;left:-10000px;top:0;width:760px;background:#fff;font-size:15px}
+.rp-cap .rp-page{border:0!important;border-radius:0!important;padding:0 0 4px!important;margin:0 0 20px;width:760px}
+.rp-cap .rp-ks,.rp-cap .rp-as3{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.rp-cap .rp-c{grid-template-columns:1fr 1fr!important}
+.rp-cap .rp-h{flex-direction:row!important;align-items:flex-end!important}
+.rp-cap .rp-meta{align-items:flex-end!important;text-align:right!important}
+.rp-cap .rp-hero{flex-wrap:nowrap!important}
+.rp-cap .rp-k+.rp-k,.rp-cap .rp-a+.rp-a{border-left:1px solid #e5e7eb!important;border-top:0!important}
 @media print{
  @page{size:A4;margin:12mm}
  html,body{background:#fff!important}
@@ -555,8 +565,8 @@ const V={
   const label=R.y==="cur"?cur:`ปีการศึกษา ${R.y}`;
   return `<div class="top noprint"><button class="ghost" data-home>‹ กลับ</button><span class="muted">รายงาน PDF</span></div>
   <div class="noprint rp-ctl"><label for="rp-y">ปีการศึกษา<select id="rp-y" data-rpy><option value="cur" ${R.y==="cur"?"selected":""}>${cur}</option>${YEARS.map(y=>`<option value="${y}" ${R.y===y?"selected":""}>ปีการศึกษา ${y}</option>`).join("")}</select></label>
-  <button class="primary" data-print ${D?"":"disabled"}>บันทึกเป็น PDF</button><p class="muted" style="font-size:.8rem">กดแล้วเลือก "บันทึกเป็น PDF" หรือ "Save as PDF" · บน iPhone เลือก พิมพ์ แล้วกดแชร์เพื่อบันทึก</p></div>
-  ${R.hint?`<div class="okb noprint" style="text-align:left;font-weight:400">แอปที่เปิดจากไอคอนหน้าจอโฮมบันทึก PDF ไม่ได้ (ข้อจำกัดของ iPhone)<br><a href="${location.origin+location.pathname}#rp" target="_blank" rel="noopener" style="font-weight:700">กดที่นี่เพื่อเปิดรายงานใน Safari</a> แล้วกด "บันทึกเป็น PDF" อีกครั้ง (อาจต้องใส่รหัสเข้าระบบใหม่ 1 ครั้ง)</div>`:""}
+  <button class="primary" data-print ${D&&!R.busy?"":"disabled"}>${R.busy?"กำลังสร้าง PDF…":"บันทึกเป็น PDF"}</button><p class="muted" style="font-size:.8rem">${IOS()?"แอปจะสร้างไฟล์ PDF แล้วเปิดหน้าแชร์ เลือก \"บันทึกลงในไฟล์\" หรือส่งต่อได้เลย":"กดแล้วเลือก Save as PDF / บันทึกเป็น PDF"}</p></div>
+  ${R.busy?`<div class="okb noprint" role="status">${R.busy}</div>`:""}
   ${R.err?`<div class="err noprint">${R.err}</div>`:""}${R.loading||!D?`<div class="empty noprint">กำลังโหลดข้อมูล…</div>`:report(D,label)}`},
  rnew:()=>{const n=S.nw,F=FORMS[n.type];
   return `<div class="top"><button class="ghost" data-home>‹ กลับ</button><span class="muted">${esc(nameOf(S.me))}</span></div><h1>${role(S.me)==="admin"?"ส่งใบประเมินแทน resident":"ส่งใบประเมินใหม่"}</h1>
@@ -687,6 +697,32 @@ function report(D,label){const rq=D.reqs,res=D.res,done=rq.filter(r=>r.status===
    <div class="rp-c"><div class="rp-good"><h4>จุดเด่น</h4>${li(pickTexts(ds,"strength"))}</div><div class="rp-imp"><h4>สิ่งที่ต้องพัฒนา</h4>${li(pickTexts(ds,"improve"))}</div></div>
    <p class="rp-note">ความเห็นคัดจากใบประเมินล่าสุด หมวดละไม่เกิน 4 ข้อ ตัดข้อความซ้ำ</p></section>`}).join("");
  return `<div class="rpt">${p1}${pages}</div>`}
+
+// iPhone/iPad: สร้าง PDF ในแอปเอง (แอปบนหน้าจอโฮมสั่งพิมพ์ไม่ได้)
+const IOS=()=>/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+const loadJs=u=>new Promise((ok,no)=>{if(document.querySelector(`script[src="${u}"]`)){ok();return}const s=document.createElement("script");s.src=u;s.onload=ok;s.onerror=no;document.head.appendChild(s)});
+async function makePdf(){const R=S.rp;if(R.busy)return;
+ const say=t=>{R.busy=t;const b=document.querySelector("[data-print]");if(b){b.disabled=true;b.textContent="กำลังสร้าง PDF…"}let o=document.querySelector(".rp-ctl+.okb,.okb.rp-st");if(!o){o=document.createElement("div");o.className="okb noprint rp-st";o.setAttribute("role","status");const c=document.querySelector(".rp-ctl");c&&c.after(o)}o.textContent=t};
+ try{say("กำลังเตรียม…");
+  await loadJs("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
+  await loadJs("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+  const src=document.querySelector(".rpt");if(!src)throw 0;
+  const box=document.createElement("div");box.className="rp-cap";box.innerHTML=src.innerHTML;document.body.appendChild(box);
+  // ใส่สีจริงให้กราฟ (ตัวแปรสีใช้ไม่ได้ตอนแปลงเป็นรูป)
+  box.querySelectorAll("svg *").forEach(el=>{const cs=getComputedStyle(el);["fill","stroke"].forEach(p=>{const v=cs[p];if(v&&v!=="none")el.setAttribute(p,v)});if(el.tagName==="text"){el.setAttribute("font-family",cs.fontFamily);el.setAttribute("font-size",cs.fontSize);el.setAttribute("font-weight",cs.fontWeight)}});
+  box.querySelectorAll("svg.radar").forEach(s=>{const v=(s.getAttribute("viewBox")||"").split(/\s+/).map(Number);if(v.length===4){const px=34,py=14,w=v[2]+2*px,h=v[3]+2*py;s.setAttribute("viewBox",`${v[0]-px} ${v[1]-py} ${w} ${h}`);s.style.width="100%";s.style.margin="8px 0";s.style.height=(s.getBoundingClientRect().width*h/w)+"px"}});
+  await (document.fonts?document.fonts.ready:Promise.resolve());
+  const {jsPDF}=window.jspdf,pdf=new jsPDF({unit:"mm",format:"a4",orientation:"portrait",compress:true}),pages=[...box.querySelectorAll(".rp-page")];
+  for(let i=0;i<pages.length;i++){say(`กำลังสร้าง PDF… หน้า ${i+1} / ${pages.length}`);
+   const cv=await html2canvas(pages[i],{scale:2,backgroundColor:"#ffffff",useCORS:true,logging:false});
+   const W=210,H=297,m=10,iw=W-2*m;let w=iw,h=cv.height*iw/cv.width;if(h>H-2*m){h=H-2*m;w=cv.width*h/cv.height}
+   if(i)pdf.addPage();pdf.addImage(cv.toDataURL("image/jpeg",.9),"JPEG",(W-w)/2,m,w,h)}
+  box.remove();
+  const name=`NeuroRA_report_${R.y==="cur"?today():R.y}.pdf`,blob=pdf.output("blob"),file=new File([blob],name,{type:"application/pdf"});
+  R.busy="";keep();
+  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:name})}catch(e){}}
+  else{const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000)}
+ }catch(e){const b=document.querySelector(".rp-cap");b&&b.remove();R.busy="";R.err="สร้าง PDF ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองอีกครั้ง";keep()}}
 function keep(){const y=scrollY;render();scrollTo(0,y)}
 function key(k){if(S.view!=="login")return;
  if(k==="del"){S.code=S.code.slice(0,-1);S.err=""}
@@ -733,7 +769,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("button")||e.targ
  if(ds.ndr){const n=ndS(),c=ds.ndr;n.to=n.to.includes(c)?n.to.filter(y=>y!==c):[...n.to,c];S.err="";keep();return}
  if("ndsend" in ds){sendNudge();return}
  if("report" in ds){go("report",{rp:{y:"cur"}});return}
- if("print" in ds){const sa=navigator.standalone===true||(window.matchMedia&&matchMedia("(display-mode: standalone)").matches);if(sa&&/iPhone|iPad|iPod/.test(navigator.userAgent)){S.rp.hint=true;keep();return}window.print();return}
+ if("print" in ds){if(IOS())makePdf();else window.print();return}
  if(ds.d){key(ds.d);return}
  if("out" in ds){S.me=null;ls.set("nra_me",null);go("login",{code:""})}
  else if("home" in ds)home();
