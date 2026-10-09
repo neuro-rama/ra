@@ -271,6 +271,10 @@ input,textarea,select{font-size:16px!important}
 .tpick .tn{overflow:hidden}
 .tpick button.off{opacity:.55}
 .nolk{color:var(--low)}
+.tpick.rpick{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.tpick.rpick button{padding:6px 8px 6px 12px;min-height:44px;gap:6px;border-radius:12px}
+.tpick.rpick .tn{font-size:.9rem;line-height:1.25;overflow-wrap:anywhere}
+.tpick.rpick .ck{width:22px;height:22px;font-size:.8rem}
 </style>
 <div id="app"></div>
 <script>
@@ -442,13 +446,13 @@ const V={
   :`<div class="empty">ยังไม่ได้ส่งใบประเมิน<br>กด "ส่งใบประเมินใหม่" แล้วเลือกอาจารย์ที่ต้องการให้ประเมิน</div>`))+warn()},
  rnew:()=>{const n=S.nw,F=FORMS[n.type];
   return `<div class="top"><button class="ghost" data-home>‹ กลับ</button><span class="muted">${esc(nameOf(S.me))}</span></div><h1>${role(S.me)==="admin"?"ส่งใบประเมินแทน resident":"ส่งใบประเมินใหม่"}</h1>
-  ${role(S.me)==="admin"?`<label for="n-res">แพทย์ประจำบ้าน<select id="n-res" data-n="res"><option value="">เลือกแพทย์ประจำบ้าน</option>${Object.keys(RES).map(c=>`<option value="${c}" ${n.res===c?"selected":""}>${esc(nameOf(c))} (${RES[c].y})</option>`).join("")}</select></label>`:""}
+  ${role(S.me)==="admin"?(()=>{const rs=n.rs||(n.rs=[]),all=Object.keys(RES),on=all.length&&all.every(c=>rs.includes(c));return `<div><div class="top"><label>แพทย์ประจำบ้าน</label><button type="button" class="small" style="white-space:nowrap;flex:none" data-nrsall aria-pressed="${!!on}">${on?"ล้างทั้งหมด":"All"}</button></div><div class="tpick rpick" style="margin-top:8px">${all.map(c=>`<button data-nrs="${c}" aria-pressed="${rs.includes(c)}"><span class="tn">${esc(plain(c))}</span><span class="ck" aria-hidden="true">${rs.includes(c)?"✓":""}</span></button>`).join("")}</div></div>`})():""}
   <div><label>ประเภท</label><div class="chips chips3" style="margin-top:6px">${KS.map(k=>`<button data-ntype="${k}" class="tyb ty-${k}" aria-pressed="${n.type===k}">${{jc:"Journal",topic:"Topic",clin:"Grand round"}[k]}</button>`).join("")}</div></div>
   ${F?F.head.map(([k,l])=>`<label for="n-${k}">${l}<input id="n-${k}" type="text" data-nf="${k}" value="${esc(n.f[k])}"></label>`).join(""):""}
   <label for="n-date">วันที่<input id="n-date" type="date" data-n="date" value="${n.date}"></label>
   <div><div class="top"><label>อาจารย์ผู้ประเมิน</label><button type="button" class="small" style="white-space:nowrap;flex:none" data-nasall aria-pressed="${n.as.length===Object.keys(STAFF).length}">${n.as.length===Object.keys(STAFF).length?"ล้างทั้งหมด":"All"}</button></div><div class="tpick" style="margin-top:8px">${Object.entries(STAFF).map(([c,nm])=>`<button data-nas="${c}" aria-pressed="${n.as.includes(c)}">${av(c)}<span class="tn">${esc(nm)}</span><span class="ck" aria-hidden="true">${n.as.includes(c)?"✓":""}</span></button>`).join("")}</div></div>
   ${S.err?`<div class="err" role="alert">${S.err}</div>`:""}
-  <div class="bar"><div><div class="tot muted">ส่งถึงอาจารย์ ${n.as.length} ท่าน</div><button class="primary" data-send ${S.sending?"disabled":""}>${S.sending?"กำลังส่ง…":"ส่ง"}</button></div></div>`}
+  <div class="bar"><div><div class="tot muted">${role(S.me)==="admin"?`resident ${(n.rs||[]).length} คน · อาจารย์ ${n.as.length} ท่าน`:`ส่งถึงอาจารย์ ${n.as.length} ท่าน`}</div><button class="primary" data-send ${S.sending?"disabled":""}>${S.sending?"กำลังส่ง…":"ส่ง"}</button></div></div>`}
 };
 function trend(k,rs){const a=[...rs].sort((x,y)=>x.date<y.date?-1:1).map(nat),n=a.length,l=a[n-1];
  if(n<2)return "ล่าสุด "+fa(k,l);const d=l-a[n-2];return "ล่าสุด "+fa(k,l)+" "+(d>0?"▲ "+fa(k,d):d<0?"▼ "+fa(k,-d):"เท่าเดิม")}
@@ -605,21 +609,23 @@ document.addEventListener("click",e=>{const b=e.target.closest("button")||e.targ
    go("detail",{open:id,draft:null,saved:true})}
  else if("new" in ds)go("rnew",{nw:{type:"",f:{},date:today(),as:[],res:""}});
  else if(ds.ntype){S.nw.type=ds.ntype;S.err="";keep()}
+ else if("nrsall" in ds){const all=Object.keys(RES),rs=S.nw.rs||[];S.nw.rs=all.every(c=>rs.includes(c))?[]:all;S.err="";keep()}
+ else if(ds.nrs){const rs=S.nw.rs||[],c=ds.nrs;S.nw.rs=rs.includes(c)?rs.filter(y=>y!==c):[...rs,c];S.err="";keep()}
  else if("nasall" in ds){const all=Object.keys(STAFF);S.nw.as=S.nw.as.length===all.length?[]:all;S.err="";keep()}
  else if(ds.nas){const a=S.nw.as,i=a.indexOf(ds.nas);i<0?a.push(ds.nas):a.splice(i,1);S.err="";keep()}
  else if("send" in ds){const n=S.nw,F=FORMS[n.type];let m="";
-   const adm=role(S.me)==="admin",rc=adm?n.res:S.me,back=x=>adm?go("ahome",{nw:null,tab:"pend",...x}):go("rhome",{nw:null,rtab:"list",...x});
-   if(adm&&!rc)m="กรุณาเลือกแพทย์ประจำบ้าน";
+   const adm=role(S.me)==="admin",rcs=adm?(n.rs||[]).filter(c=>RES[c]):[S.me],back=x=>adm?go("ahome",{nw:null,tab:"pend",...x}):go("rhome",{nw:null,rtab:"list",...x});
+   if(adm&&!rcs.length)m="กรุณาเลือกแพทย์ประจำบ้านอย่างน้อย 1 คน";
    else if(!F)m="กรุณาเลือกประเภท";
    else{const h=F.head.find(([k])=>!String(n.f[k]??"").trim());m=h?"กรุณาใส่"+h[1]:!n.as.length?"กรุณาเลือกอาจารย์อย่างน้อย 1 ท่าน":""}
    if(m){S.err=m;keep();return}
    if(S.sending)return;
-   n.g=n.g||newId();n.ids=n.ids||{};const g=n.g,f={};F.head.forEach(([k])=>f[k]=n.f[k].trim());
-   const rs=n.as.map(c=>({id:n.ids[c]||(n.ids[c]=newId()),group:g,type:n.type,resCode:rc,date:n.date,title:f.title,f:{...f},assessor:c,resName:nameOf(rc),assessorName:nameOf(c),status:"pending",...(adm?{by:S.me}:{})}));
+   n.gs=n.gs||{};n.ids=n.ids||{};const f={};F.head.forEach(([k])=>f[k]=n.f[k].trim());
+   const rs=rcs.flatMap(rc=>{const g=n.gs[rc]||(n.gs[rc]=newId());return n.as.map(c=>{const key=rc+"|"+c;return {id:n.ids[key]||(n.ids[key]=newId()),group:g,type:n.type,resCode:rc,date:n.date,title:f.title,f:{...f},assessor:c,resName:nameOf(rc),assessorName:nameOf(c),status:"pending",...(adm?{by:S.me}:{})}})});
    if(!GAS){rs.forEach(put);back({});return}
    S.sending=true;S.err="";P++;W++;keep();
    call({code:S.me,action:"saveMany",rs}).then(x=>{if(!x||!x.ok||!x.saved)throw 0;rs.forEach(r=>{if(!S.reqs.some(y=>y.id===r.id))S.reqs.push(r)});
-     P--;W++;S.sending=false;back({note:"ส่งถึงอาจารย์ "+rs.length+" ท่านเรียบร้อยแล้ว"})})
+     P--;W++;S.sending=false;back({note:adm&&rcs.length>1?`ส่งแทน resident ${rcs.length} คน ถึงอาจารย์ ${n.as.length} ท่าน (${rs.length} ใบ) เรียบร้อยแล้ว`:"ส่งถึงอาจารย์ "+n.as.length+" ท่านเรียบร้อยแล้ว"})})
     .catch(e=>{P--;W++;S.sending=false;if(S.view==="rnew"){S.err="ส่งไม่สำเร็จ กรุณากดส่งอีกครั้ง (กดซ้ำได้ ระบบไม่สร้างใบซ้ำ)";keep()}})}
  else if(ds.del){S.confirm=ds.del;keep()}
  else if(ds.delyes){del(ds.delyes);S.confirm=null;S.view==="detail"?home():keep()}
