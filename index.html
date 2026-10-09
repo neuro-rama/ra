@@ -370,6 +370,16 @@ input,textarea,select{font-size:16px!important}
 .rp-cap .rp-meta{align-items:flex-end!important;text-align:right!important}
 .rp-cap .rp-hero{flex-wrap:nowrap!important}
 .rp-cap .rp-k+.rp-k,.rp-cap .rp-a+.rp-a{border-left:1px solid #e5e7eb!important;border-top:0!important}
+
+.dhint{font-weight:400;font-size:.78rem;color:var(--muted)}
+.rp-t thead th small{display:block;font-weight:400;font-size:.68rem}
+.rp-t small.of{color:var(--muted);font-weight:400}
+.rp-mc{display:flex;flex-direction:column;gap:4px}
+.rp-mh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.rp-mh span{display:flex;gap:12px;font-size:.72rem;color:var(--muted);align-items:center}
+.rp-mh i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px}
+.rp-chart{width:100%;height:auto;display:block}
+.rp-chart .cm{font-size:11px;fill:#5b6472;font-family:var(--body)}.rp-chart .cv{font-size:10px;fill:#111827;font-family:var(--num);font-weight:600}
 @media print{
  @page{size:A4;margin:12mm}
  html,body{background:#fff!important}
@@ -423,6 +433,7 @@ const FORMS={
   texts:[["strength","จุดเด่น"],["improve","สิ่งที่ต้องพัฒนา"]]}
 };
 
+const actDay=(type,s)=>{const d=new Date((s||today())+"T00:00:00Z"),t=type==="clin"?5:2;d.setUTCDate(d.getUTCDate()-((d.getUTCDay()-t+7)%7));return d.toISOString().slice(0,10)};
 const today=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
 const newId=()=>"r"+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -485,7 +496,7 @@ function editDone(r){const F=FORMS[r.type];
  go("form",{type:r.type,fb:Object.values(r.t||{}).some(Boolean),draft:{reqId:r.id,group:r.group,date:r.date,resCode:r.resCode,f:{title:r.title,...(r.f||{})},
   scores:r.scores.slice(),touched:F.items.map(()=>true),t:{...(r.t||{})},edit:r,locked:true}})}
 function start(type,req,res){const F=FORMS[type];
- go("form",{type,draft:{reqId:req?req.id:null,group:req?req.group:null,date:req?req.date:today(),resCode:req?req.resCode:res,
+ go("form",{type,draft:{reqId:req?req.id:null,group:req?req.group:null,date:req?req.date:actDay(type),resCode:req?req.resCode:res,
   f:req?{title:req.title,...(req.f||{})}:{},scores:F.items.map(()=>F.kind==="slider"?0:null),touched:F.items.map(()=>false),t:{}}})}
 const hdr=t=>`<div class="top"><button class="hav" data-pf="${S.me}" aria-label="รูปโปรไฟล์ของฉัน">${av(S.me)}</button><div style="min-width:0">${t?`<p class="muted">${esc(nameOf(S.me))}</p><h1>${t}</h1>`:`<h1>${esc(nameOf(S.me))}</h1>`}</div><button class="ghost" data-out>Sign out</button></div>`;
 const warn=()=>(S.note?`<div class="okb" role="status">${S.note}</div>`:"")+(S.warn?`<div class="err">${S.warn}</div>`:"");
@@ -518,7 +529,7 @@ const V={
   return `<div class="top"><button class="ghost" data-home>‹ กลับ</button><span class="muted">${esc(nameOf(S.me))}</span></div>
   ${d.edit?`<p class="lockn">${d.locked?"ใบนี้ประเมินแล้ว กด \"แก้ไข\" ด้านล่างเพื่อแก้คะแนน":"กำลังแก้ไข แก้เสร็จแล้วกด \"บันทึกการแก้ไข\""}</p>`:""}${d.reqId?`<h1 class="tn2">${F.name}</h1>`:tabs("ftype",S.type,KS.map(k=>[k,FORMS[k].sh,"ty-"+k]))}
   <div class="fhead"><div class="top"><b style="font-size:1.05rem">${esc(nameOf(d.resCode))}</b><span class="muted">${d.reqId&&!F.chips?d.date:""}</span></div>
-   ${d.reqId?`<div class="rog">${ro(F,d.f,1)}</div>`:F.head.map(([k,l])=>`<label for="f-${k}">${l}<input id="f-${k}" type="text" data-f="${k}" value="${esc(d.f[k])}"></label>`).join("")+(F.chips?"":`<label for="f-date">วันที่<input id="f-date" type="date" data-k="date" value="${d.date}"></label>`)}
+   ${d.reqId?`<div class="rog">${ro(F,d.f,1)}</div>`:F.head.map(([k,l])=>`<label for="f-${k}">${l}<input id="f-${k}" type="text" data-f="${k}" value="${esc(d.f[k])}"></label>`).join("")+(F.chips?"":`<label for="f-date">วันที่จัดกิจกรรม<input id="f-date" type="date" data-k="date" value="${d.date}"><span class="dhint">ใส่วันที่จัดกิจกรรม ไม่ใช่วันที่ส่งหรือวันที่ประเมิน</span></label>`)}
    ${(F.chips||[]).map(([k,l,opts])=>{const ch=`<span class="chips" role="group" aria-label="ความยากง่าย" style="flex-wrap:nowrap">${opts.map(o=>`<button type="button" data-chip="${k}" data-v="${o}" aria-pressed="${d.f[k]===o}">${o}</button>`).join("")}</span>`,ms=S.miss&&!d.f[k]?" miss":"";
     return d.reqId?`<div class="inl${ms}" style="justify-content:space-between;flex-wrap:nowrap"><span class="muted" style="white-space:nowrap">${d.date}</span><span class="inl" style="flex-wrap:nowrap;gap:6px"><b style="font-size:.78rem;white-space:nowrap">ความยากง่าย</b>${ch}</span></div>`
      :`<div class="dd"><label for="f-date">วันที่<input id="f-date" type="date" data-k="date" value="${d.date}"></label><div class="${ms.trim()}"><label>ความยากง่าย</label>${ch}</div></div>`}).join("")}</div>
@@ -573,7 +584,7 @@ const V={
   ${role(S.me)==="admin"?(()=>{const rs=n.rs||(n.rs=[]),all=Object.keys(RES),on=all.length&&all.every(c=>rs.includes(c));return `<div><div class="top"><label>แพทย์ประจำบ้าน</label><button type="button" class="small" style="white-space:nowrap;flex:none" data-nrsall aria-pressed="${!!on}">${on?"ล้างทั้งหมด":"All"}</button></div><div class="tpick rpick" style="margin-top:8px">${all.map(c=>`<button data-nrs="${c}" aria-pressed="${rs.includes(c)}"><span class="tn">${esc(plain(c))}</span><span class="ck" aria-hidden="true">${rs.includes(c)?"✓":""}</span></button>`).join("")}</div></div>`})():""}
   <div><label>ประเภท</label><div class="chips chips3" style="margin-top:6px">${KS.map(k=>`<button data-ntype="${k}" class="tyb ty-${k}" aria-pressed="${n.type===k}">${{jc:"Journal",topic:"Topic",clin:"Grand round"}[k]}</button>`).join("")}</div></div>
   ${F?F.head.map(([k,l])=>`<label for="n-${k}">${l}<input id="n-${k}" type="text" data-nf="${k}" value="${esc(n.f[k])}"></label>`).join(""):""}
-  <label for="n-date">วันที่<input id="n-date" type="date" data-n="date" value="${n.date}"></label>
+  <label for="n-date">วันที่จัดกิจกรรม<input id="n-date" type="date" data-n="date" value="${n.date}"><span class="dhint">ใส่วันที่จัดกิจกรรม ไม่ใช่วันที่ส่งใบประเมิน</span></label>
   <div><div class="top"><label>อาจารย์ผู้ประเมิน</label><button type="button" class="small" style="white-space:nowrap;flex:none" data-nasall aria-pressed="${n.as.length===Object.keys(STAFF).length}">${n.as.length===Object.keys(STAFF).length?"ล้างทั้งหมด":"All"}</button></div><div class="tpick" style="margin-top:8px">${Object.entries(STAFF).map(([c,nm])=>`<button data-nas="${c}" aria-pressed="${n.as.includes(c)}">${av(c)}<span class="tn">${esc(nm)}</span><span class="ck" aria-hidden="true">${n.as.includes(c)?"✓":""}</span></button>`).join("")}</div></div>
   ${S.err?`<div class="err" role="alert">${S.err}</div>`:""}
   <div class="bar"><div><div class="tot muted">${role(S.me)==="admin"?`resident ${(n.rs||[]).length} คน · อาจารย์ ${n.as.length} ท่าน`:`ส่งถึงอาจารย์ ${n.as.length} ท่าน`}</div><button class="primary" data-send ${S.sending?"disabled":""}>${S.sending?"กำลังส่ง…":"ส่ง"}</button></div></div>`}
@@ -672,23 +683,35 @@ function loadArc(y){if(ARC[y]||!GAS)return;S.rp.loading=true;
 function pickTexts(rs,key){const seen=new Set(),out=[];
  [...rs].sort((a,b)=>((b.doneAt||b.date)>(a.doneAt||a.date)?1:-1)).forEach(r=>{const t=String((r.t||{})[key]||"").replace(/\s+/g," ").trim();
   const k=t.toLowerCase().replace(/[^\p{L}\p{N}]/gu,"");if(t.length<6||seen.has(k)||out.length>=4)return;seen.add(k);out.push({t:t.length>220?t.slice(0,217)+"…":t,m:FORMS[r.type].sh+" · "+thd(r.date)})});return out}
+
+// กราฟจำนวนครั้งที่จัดกิจกรรมรายเดือน
+function mChart(rq){const ds={};rq.forEach(r=>{const m=String(r.date||"").slice(0,7);if(!/^\d{4}-\d{2}$/.test(m))return;((ds[m]=ds[m]||{})[r.type]=ds[m][r.type]||new Set()).add(r.date)});
+ let ms=Object.keys(ds).sort();if(!ms.length)return "";
+ const all=[];let [y,mo]=ms[0].split("-").map(Number);const [ey,em]=ms[ms.length-1].split("-").map(Number);while(y<ey||(y===ey&&mo<=em)){all.push(`${y}-${String(mo).padStart(2,"0")}`);mo++;if(mo>12){mo=1;y++}}
+ const v=m=>KS.map(t=>ds[m]&&ds[m][t]?ds[m][t].size:0),mx=Math.max(1,...all.flatMap(v));
+ const W=720,H=170,L=26,B=26,T=14,gw=(W-L)/all.length,bw=Math.min(16,(gw-10)/3),col={jc:"#a17a00",topic:"#1d4ed8",clin:"#0f766e"};
+ const yv=n=>T+(H-T-B)*(1-n/mx),ticks=[...new Set([0,Math.ceil(mx/2),mx])];
+ const bars=all.map((m,i)=>{const x0=L+i*gw+(gw-3*bw-4)/2;return v(m).map((n,k)=>{const x=x0+k*(bw+2),t=KS[k];return n?`<rect x="${x.toFixed(1)}" y="${yv(n).toFixed(1)}" width="${bw.toFixed(1)}" height="${(H-B-yv(n)).toFixed(1)}" rx="2" fill="${col[t]}"/><text x="${(x+bw/2).toFixed(1)}" y="${(yv(n)-3).toFixed(1)}" text-anchor="middle" class="cv">${n}</text>`:""}).join("")+`<text x="${(L+i*gw+gw/2).toFixed(1)}" y="${H-8}" text-anchor="middle" class="cm">${TM[+m.slice(5)-1]} ${String(+m.slice(0,4)+543).slice(2)}</text>`}).join("");
+ return `<div class="rp-mc"><div class="rp-mh"><h2>จำนวนครั้งที่จัดกิจกรรมรายเดือน</h2><span>${KS.map(t=>`<i style="background:${col[t]}"></i>${FORMS[t].sh}`).join("")}</span></div>
+ <svg viewBox="0 0 ${W} ${H}" class="rp-chart" role="img" aria-label="จำนวนครั้งที่จัดกิจกรรมรายเดือน">${ticks.map(n=>`<line x1="${L}" x2="${W}" y1="${yv(n).toFixed(1)}" y2="${yv(n).toFixed(1)}" stroke="#e5e7eb"/><text x="${L-6}" y="${(yv(n)+4).toFixed(1)}" text-anchor="end" class="cm">${n}</text>`).join("")}${bars}</svg></div>`}
 function report(D,label){const rq=D.reqs,res=D.res,done=rq.filter(r=>r.status==="done");
- const grp=(l)=>new Set(l.map(r=>r.group||r.id)).size;
+ const grp=(l)=>new Set(l.map(r=>r.group||r.id)).size,days=l=>new Set(l.map(r=>r.date)).size;
+ const gD=days(rq.filter(r=>r.type==="clin"));
  const yrs=[...new Set(Object.values(res).map(r=>r.y))].sort();
  const nm=c=>res[c]?res[c].t+res[c].f+" "+res[c].l:(NM[c]||c);
  const head=`<header class="rp-h"><div><p class="rp-eb">NeuroRA evaluation · สาขาประสาทวิทยา</p><h1>รายงานผลการประเมินแพทย์ประจำบ้าน</h1></div><div class="rp-meta"><b>${label}</b><span>ออกรายงาน ${thd(today())}</span></div></header>`;
  const kpi=KS.map(t=>{const all=rq.filter(r=>r.type===t),d=done.filter(r=>r.type===t),a=avg(d.map(nat));
-  return `<div class="rp-k ty-${t}"><span class="tn2">${FORMS[t].name}</span><div class="rp-kn"><div><b>${grp(all)}</b><span>ครั้ง</span></div><div><b>${d.length}</b><span>ใบประเมินแล้ว${all.length>d.length?` (รอ ${all.length-d.length})`:""}</span></div><div><b>${a==null?"–":fa(t,a)}</b><span>คะแนนเฉลี่ย / ${t==="clin"?9:100}</span></div></div></div>`}).join("");
+  return `<div class="rp-k ty-${t}"><span class="tn2">${FORMS[t].name}</span><div class="rp-kn"><div><b>${days(all)}</b><span>ครั้งที่จัดกิจกรรม</span></div><div><b>${d.length}</b><span>ใบประเมินแล้ว${all.length>d.length?` (รอ ${all.length-d.length})`:""}</span></div><div><b>${a==null?"–":fa(t,a)}</b><span>คะแนนเฉลี่ย / ${t==="clin"?9:100}</span></div></div></div>`}).join("");
  const rows=yrs.map(y=>{const cs=Object.keys(res).filter(c=>res[c].y===y);
-  return `<tr class="rp-yr"><th colspan="6">${y}</th></tr>`+cs.map(c=>{const n=KS.map(t=>grp(rq.filter(r=>r.resCode===c&&r.type===t)));
-   return `<tr><td>${esc(nm(c))}</td><td class="n">${c}</td>${n.map(v=>`<td class="n${v?"":" z"}">${v}</td>`).join("")}<td class="n"><b>${n.reduce((a,b)=>a+b,0)}</b></td></tr>`}).join("")}).join("");
+  return `<tr class="rp-yr"><th colspan="6">${y}</th></tr>`+cs.map(c=>{const mine=rq.filter(r=>r.resCode===c),j=grp(mine.filter(r=>r.type==="jc")),tp=grp(mine.filter(r=>r.type==="topic")),g=days(mine.filter(r=>r.type==="clin"));
+   return `<tr><td>${esc(nm(c))}</td><td class="n">${c}</td><td class="n${j?"":" z"}">${j}</td><td class="n${tp?"":" z"}">${tp}</td><td class="n${g?"":" z"}">${g}</td><td class="n"><b>${done.filter(r=>r.resCode===c).length}</b></td></tr>`}).join("")}).join("");
  const p1=`<section class="rp-page">${head}<h2>ส่วนที่ 1 ภาพรวมกิจกรรม</h2><div class="rp-ks">${kpi}</div>
-  <h2>จำนวนครั้งที่ resident แต่ละคนทำกิจกรรม</h2><table class="rp-t"><thead><tr><th>ชื่อ-สกุล</th><th>รหัส</th><th>Journal club</th><th>Topic</th><th>Grand round</th><th>รวม</th></tr></thead><tbody>${rows||`<tr><td colspan="6">ไม่มีข้อมูล</td></tr>`}</tbody></table>
-  <p class="rp-note">นับ 1 ครั้งต่อการนำเสนอ 1 ครั้งของ resident (ไม่ว่าส่งถึงอาจารย์กี่ท่าน) · คะแนนเฉลี่ยคิดจากใบที่ประเมินแล้ว</p></section>`;
+  <h2>จำนวนครั้งที่ resident แต่ละคนทำกิจกรรม</h2><table class="rp-t"><thead><tr><th>ชื่อ-สกุล</th><th>รหัส</th><th>Journal club<small>เรื่อง</small></th><th>Topic<small>เรื่อง</small></th><th>Grand round<small>ครั้งที่รับการประเมิน</small></th><th>ใบประเมิน<small>ที่ประเมินแล้ว</small></th></tr></thead><tbody>${rows||`<tr><td colspan="6">ไม่มีข้อมูล</td></tr>`}</tbody></table>
+  <p class="rp-note">ครั้งที่จัดกิจกรรม นับจากวันที่จัดกิจกรรมที่ไม่ซ้ำกัน · Journal club / Topic นับจำนวนเรื่องที่ resident นำเสนอ · Grand round นับจำนวนครั้ง (วัน) ที่ resident ได้รับการประเมิน · คะแนนเฉลี่ยคิดจากใบที่ประเมินแล้ว</p></section>`;
  const pages=yrs.flatMap(y=>Object.keys(res).filter(c=>res[c].y===y)).map((c,i)=>{const R=res[c],ds=done.filter(r=>r.resCode===c);
   const ph=okImg(PH[c])?`<img src="${PH[c]}" alt="">`:`<span>${esc((R.f||"?")[0])}</span>`,nAll=grp(rq.filter(r=>r.resCode===c));
-  const acts=KS.map(t=>{const rs=ds.filter(r=>r.type===t),n=grp(rq.filter(r=>r.resCode===c&&r.type===t)),a=avg(rs.map(nat)),F=FORMS[t];
-   return `<div class="rp-a ty-${t}"><div class="rp-ah"><b>${F.sh}</b><span>${n} ครั้ง · ${rs.length} ใบ</span></div>
+  const acts=KS.map(t=>{const rs=ds.filter(r=>r.type===t),mine=rq.filter(r=>r.resCode===c&&r.type===t),n=t==="clin"?`รับการประเมิน ${days(mine)} ครั้ง`:`${grp(mine)} เรื่อง`,a=avg(rs.map(nat)),F=FORMS[t];
+   return `<div class="rp-a ty-${t}"><div class="rp-ah"><b>${F.sh}</b><span>${n}</span></div>
    <div class="rp-as"><b>${a==null?"–":fa(t,a)}</b><small>/${t==="clin"?9:100}</small>${a==null?"":`<span class="rp-lv">${level(t,a)}</span>`}</div>
    ${rs.length?radar(F,rs,t==="clin"?9:20,1):`<div class="rp-none">ยังไม่มีผลประเมิน</div>`}</div>`}).join("");
   const li=l=>l.length?`<ul>${l.map(o=>`<li>${esc(o.t)}<small>${o.m}</small></li>`).join("")}</ul>`:`<p class="rp-none">ยังไม่มีความเห็น</p>`;
@@ -754,7 +777,7 @@ document.addEventListener("keydown",e=>{
 document.addEventListener("input",e=>{const el=e.target,d=S.draft;
  if("ndd" in el.dataset){ndS().date=el.value;return}
  if(el.dataset.nf&&S.nw){S.nw.f[el.dataset.nf]=el.value;return}
- if(el.dataset.n&&S.nw){S.nw[el.dataset.n]=el.value;return}
+ if(el.dataset.n&&S.nw){S.nw[el.dataset.n]=el.value;if(el.dataset.n==="date")S.nw.dm=true;return}
  if(!d)return;
  if(el.dataset.k)d[el.dataset.k]=el.value;if(el.dataset.f)d.f[el.dataset.f]=el.value;if(el.dataset.t)d.t[el.dataset.t]=el.value;
  if(el.dataset.sl){const i=+el.dataset.sl,was=d.touched[i];d.scores[i]=+el.value;d.touched[i]=true;
@@ -798,7 +821,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("button")||e.targ
    put({id,group:d.group||id,type:S.type,resCode:d.resCode,date:d.date,title:d.f.title||"",assessor:S.me,resName:nameOf(d.resCode),assessorName:nameOf(S.me),status:"done",f:d.f,scores:d.scores,t:d.t,s20:true,doneAt:d.edit&&d.edit.doneAt||new Date().toISOString(),...(d.edit?{editedAt:new Date().toISOString()}:{})});
    go("detail",{open:id,draft:null,saved:true})}
  else if("new" in ds)go("rnew",{nw:{type:"",f:{},date:today(),as:[],res:""}});
- else if(ds.ntype){S.nw.type=ds.ntype;S.err="";keep()}
+ else if(ds.ntype){S.nw.type=ds.ntype;if(!S.nw.dm)S.nw.date=actDay(ds.ntype);S.err="";keep()}
  else if("nrsall" in ds){const all=Object.keys(RES),rs=S.nw.rs||[];S.nw.rs=all.every(c=>rs.includes(c))?[]:all;S.err="";keep()}
  else if(ds.nrs){const rs=S.nw.rs||[],c=ds.nrs;S.nw.rs=rs.includes(c)?rs.filter(y=>y!==c):[...rs,c];S.err="";keep()}
  else if("nasall" in ds){const all=Object.keys(STAFF);S.nw.as=S.nw.as.length===all.length?[]:all;S.err="";keep()}
