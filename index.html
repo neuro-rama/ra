@@ -275,6 +275,104 @@ input,textarea,select{font-size:16px!important}
 .tpick.rpick button{padding:6px 8px 6px 12px;min-height:44px;gap:6px;border-radius:12px}
 .tpick.rpick .tn{font-size:.9rem;line-height:1.25;overflow-wrap:anywhere}
 .tpick.rpick .ck{width:22px;height:22px;font-size:.8rem}
+.rpbtn{align-self:flex-end;margin-bottom:-4px}
+.rp-ctl{display:flex;flex-direction:column;gap:10px}
+.rpt{display:flex;flex-direction:column;gap:16px}
+.rp-page{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 20px;display:flex;flex-direction:column;gap:12px;color:#111827}
+.rp-h{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;border-bottom:2px solid #111827;padding-bottom:10px}
+.rp-h h1{font-size:1.25rem}.rp-h p{color:var(--muted);font-size:.85rem}
+.rp-meta{display:flex;flex-direction:column;align-items:flex-end;text-align:right;font-size:.8rem;color:var(--muted)}.rp-meta b{color:#111827;font-size:.9rem}
+.rp-page h2{font-size:1.02rem;margin:4px 0 0}
+.rp-ks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.rp-k{border:1px solid var(--line);border-top:3px solid var(--tc);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px}
+.rp-kn{display:flex;flex-direction:column;gap:4px}.rp-kn>div{display:flex;align-items:baseline;gap:6px}
+.rp-kn b{font-family:var(--num);font-size:1.15rem;min-width:2.6em}.rp-kn span{font-size:.75rem;color:var(--muted)}
+.rp-t{width:100%;border-collapse:collapse;font-size:.82rem}
+.rp-t th,.rp-t td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left}
+.rp-t thead th{font-size:.75rem;color:var(--muted);font-weight:600}
+.rp-t td.n,.rp-t thead th:nth-child(n+2){text-align:center}.rp-t td.z{color:var(--low)}
+.rp-t .rp-yr th{background:var(--soft);font-size:.78rem}
+.rp-note{font-size:.72rem;color:var(--muted)}
+.rp-s2{margin-bottom:2px}
+.rp-p{display:flex;align-items:center;gap:14px}
+.rp-ph{width:72px;height:72px;border-radius:50%;overflow:hidden;background:var(--soft);flex:none;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:700}
+.rp-ph img{width:100%;height:100%;object-fit:cover}
+.rp-p h3{font-size:1.15rem;margin:0}.rp-y{font-size:.75rem;font-weight:700;border:1px solid var(--line);border-radius:999px;padding:1px 8px}
+.rp-as3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.rp-a{border:1px solid var(--line);border-top:3px solid var(--tc);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.rp-ah{display:flex;flex-direction:column;gap:0}.rp-ah .tn2{font-size:.85rem}.rp-ah .muted{font-size:.7rem}
+.rp-as{display:flex;align-items:baseline;gap:3px;flex-wrap:wrap}.rp-as b{font-family:var(--num);font-size:1.3rem}.rp-as small{font-size:.7rem;color:var(--muted)}.rp-as span{font-size:.75rem;margin-left:4px;font-weight:600;color:var(--tc)}
+.rp-a .radar{overflow:visible;margin:22px auto 18px;width:100%;max-width:none}.rp-a .radar .rl{font-size:14px}.rp-a .radar .rv{font-size:14px}
+.rp-none{font-size:.75rem;color:var(--muted);padding:10px 0}
+.rp-c{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.rp-c h4{font-size:.88rem;margin:0 0 4px}
+.rp-c ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:9px;font-size:.88rem;line-height:1.5}
+.rp-c small{display:block;color:var(--muted);font-size:.68rem}
+@media(max-width:560px){.rp-ks,.rp-as3,.rp-c{grid-template-columns:1fr}.rp-h{flex-direction:column;align-items:flex-start}.rp-meta{align-items:flex-start;text-align:left}}
+
+/* report v2 */
+.rpt{--bg:#fff;--sheet:#fff;--ink:#111827;--muted:#5b6472;--line:#e5e7eb;--edge:#d3d8e0;--soft:#f1f3f6;--low:#b4472f;--c-jc:#a17a00;--c-topic:#1d4ed8;--c-clin:#0f766e;--b-jc:#fbf3d0;--b-topic:#e6edff;--b-clin:#dcf3ee;color:#111827;color-scheme:light}
+.rpt .ty-jc{--tc:#a17a00;--tb:#fbf3d0}.rpt .ty-topic{--tc:#1d4ed8;--tb:#e6edff}.rpt .ty-clin{--tc:#0f766e;--tb:#dcf3ee}
+.rp-h{background:#111827;color:#fff;border:0!important;border-radius:12px;padding:18px 20px!important}
+.rp-h h1{color:#fff;font-size:1.3rem}.rp-eb{color:#c7ccd6!important;font-size:.75rem!important;letter-spacing:.04em;margin-bottom:2px!important}
+.rp-meta,.rp-meta span{color:#c7ccd6!important}.rp-meta b{color:#fff!important}
+.rp-k{border:0;border-top:0;background:var(--tb);border-radius:12px}
+.rp-k .tn2{color:var(--tc)}
+.rp-hero{display:flex;align-items:center;gap:20px;background:var(--soft);border-radius:16px;padding:18px 20px}
+.rp-hero .rp-ph{width:120px;height:120px;font-size:2.8rem;border:4px solid #fff;box-shadow:0 2px 10px rgba(17,24,39,.12);background:#e5e7eb;color:#4b5563}
+.rp-who{flex:1;min-width:0}.rp-who h3{font-size:1.6rem;line-height:1.2;margin:0}.rp-who p{color:var(--muted);font-family:var(--num);font-size:.9rem;margin-top:4px}
+.rp-stat{display:flex;gap:18px;flex:none}.rp-stat>div{display:flex;flex-direction:column;align-items:center;background:#fff;border-radius:12px;padding:8px 14px;min-width:84px}
+.rp-stat b{font-family:var(--num);font-size:1.5rem;line-height:1.1}.rp-stat span{font-size:.7rem;color:var(--muted)}
+.rp-a{border:1px solid var(--line);border-top:0;border-radius:12px;padding:0 0 8px}
+.rp-ah{background:var(--tb);border-radius:12px 12px 0 0;padding:8px 10px;display:flex;flex-direction:row!important;justify-content:space-between;align-items:baseline;gap:6px}
+.rp-ah b{color:var(--tc);font-size:.9rem}.rp-ah span{font-size:.7rem;color:var(--muted)}
+.rp-as{padding:6px 10px 0;align-items:center!important}.rp-as b{font-size:1.7rem!important}
+.rp-lv{margin-left:auto!important;background:var(--tb);color:var(--tc)!important;border-radius:999px;padding:1px 9px;font-size:.72rem!important;font-weight:700}
+.rp-a .rp-none{padding:18px 10px}
+.rp-c>div{border-radius:12px;padding:16px 18px}
+.rpt .rp-page{gap:16px}
+.rp-good{background:#e8f5ef}.rp-good h4{color:#1f7a5f}
+.rp-imp{background:#fbf3e4}.rp-imp h4{color:#8a5a12}
+.rp-c h4{display:flex;align-items:center;gap:6px}
+.rp-c ul{list-style:none;padding-left:0!important}
+.rp-c li{position:relative;padding-left:14px}
+.rp-c li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.45}
+@media(max-width:560px){.rp-hero{flex-wrap:wrap}.rp-stat{width:100%}}
+@media print{.rp-hero{flex-wrap:nowrap!important}.rp-stat{width:auto!important}}
+
+/* report v3: minimal lower sections */
+.rp-ks{gap:0!important;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.rp-k{background:none!important;border:0!important;border-radius:0!important;padding:12px 14px!important}
+.rp-k+.rp-k{border-left:1px solid var(--line)!important}
+.rp-as3{gap:0!important;margin-top:4px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:4px 0}
+.rp-a{border:0!important;border-radius:0!important;padding:10px 14px!important;overflow:hidden}
+.rp-a+.rp-a{border-left:1px solid var(--line)!important}
+.rp-ah{background:none!important;border-radius:0!important;padding:0!important;flex-direction:column!important;align-items:flex-start!important;gap:0!important}
+.rp-ah b{display:inline-flex;align-items:center;gap:6px;font-size:.88rem}.rp-ah b::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--tc)}
+.rp-ah span{font-size:.72rem;margin-left:14px}
+.rp-as{padding:8px 0 0!important}
+.rp-lv{margin-left:8px!important;background:none!important;padding:0!important;font-size:.78rem!important}
+.rp-c{gap:28px!important}
+.rp-c>div{background:none!important;border-radius:0!important;padding:0!important}
+.rp-c h4{color:#111827!important;font-size:.92rem!important;padding-bottom:6px;border-bottom:1px solid var(--line);margin-bottom:10px!important}
+.rp-c h4::before{content:"";width:8px;height:8px;border-radius:50%}
+.rp-good h4::before{background:#1f7a5f}.rp-imp h4::before{background:#c27a1a}
+.rp-c li::before{background:#9aa1ad!important;opacity:1!important;width:4px!important;height:4px!important;top:.7em!important}
+@media(max-width:560px){.rp-k+.rp-k,.rp-a+.rp-a{border-left:0!important;border-top:1px solid var(--line)}}
+@media print{.rp-k+.rp-k,.rp-a+.rp-a{border-left:1px solid var(--line)!important;border-top:0!important}}
+@media print{
+ @page{size:A4;margin:12mm}
+ html,body{background:#fff!important}
+ *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ .noprint,#sv,.bar{display:none!important}
+ #app{max-width:none!important;padding:0!important;gap:0!important}
+ .rpt{gap:0}
+ .rp-page{border:0;border-radius:0;padding:0;break-after:page;page-break-after:always}
+ .rp-page:last-child{break-after:auto;page-break-after:auto}
+ .rp-ks,.rp-as3{grid-template-columns:repeat(3,minmax(0,1fr))!important}.rp-c{grid-template-columns:1fr 1fr!important}
+ .rp-h{flex-direction:row!important;align-items:flex-end!important}.rp-meta{align-items:flex-end!important;text-align:right!important}
+ .rp-a,.rp-k,.rp-c>div,.rp-t tr{break-inside:avoid}
+}
 </style>
 <div id="app"></div>
 <script>
@@ -351,7 +449,7 @@ function del(id){S.reqs=S.reqs.filter(x=>x.id!==id);persist();
  if(DB)DB.collection("requests").doc(id).delete().catch(()=>{S.warn="ลบไม่สำเร็จ ลองอีกครั้ง";render()})}
 function go(view,x={}){Object.assign(S,{view,note:"",qd:null,miss:false,fb:false,err:"",confirm:null,adding:null},x);render();scrollTo(0,0)}
 const home=()=>go({res:"rhome",admin:"ahome"}[role(S.me)]||"thome");
-function load(x){if(x.linked)LINKED=new Set(x.linked);if(x.pv!=null&&String(x.pv)!==String(PHV))setTimeout(getPhotos,50);STAFF=x.staff;RES=x.res;ADMIN=x.admin;S.reqs=x.requests.map(norm);S.reqs.forEach(r=>{if(r.resName)NM[r.resCode]=r.resName;if(r.assessorName)NM[r.assessor]=r.assessorName})}
+function load(x){if(x.years)YEARS=x.years;if(x.linked)LINKED=new Set(x.linked);if(x.pv!=null&&String(x.pv)!==String(PHV))setTimeout(getPhotos,50);STAFF=x.staff;RES=x.res;ADMIN=x.admin;S.reqs=x.requests.map(norm);S.reqs.forEach(r=>{if(r.resName)NM[r.resCode]=r.resName;if(r.assessorName)NM[r.assessor]=r.assessorName})}
 let JOB=null,NEWJ=null;const readJob=()=>{const m=location.hash.match(/j=([^&]+)/);if(m)JOB=decodeURIComponent(m[1]);const n=location.hash.match(/[#&]n=(jc|topic|clin)/),dd=location.hash.match(/[#&]d=(\d{4}-\d{2}-\d{2})/);if(n)NEWJ={t:n[1],d:dd?dd[1]:""}};readJob();
 function openJob(){if(NEWJ&&S.me){const q=NEWJ;NEWJ=null;try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}if(role(S.me)==="res"){go("rnew",{nw:{type:q.t,f:{},date:q.d||today(),as:[],res:""}});return}}
  if(!JOB||!S.me)return;const id=JOB;JOB=null;try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
@@ -396,7 +494,7 @@ const V={
    body=`<div class="chips hfc"><button data-hf="all" aria-pressed="${S.hf==="all"}">All</button>${KS.map(k=>`<button data-hf="${k}" class="tyb ty-${k}" aria-pressed="${S.hf===k}">${k==="jc"?"Journal":FORMS[k].sh}</button>`).join("")}</div>`+(l.length?l.map(recCard).join(""):`<div class="empty">ยังไม่มีใบที่ประเมินแล้ว</div>`)}
   else if(S.tab==="pend")body=`<button class="primary" data-new>+ ส่งใบประเมินแทน resident</button>`+(pend.length?pend.map(r=>`<div class="card ty-${r.type}" style="display:flex;align-items:center;gap:10px"><span class="nm"><b>${esc(plain(r.resCode))}</b><span class="muted"><span class="tn2" style="font-size:.82rem">${FORMS[r.type].sh}</span> · ${r.date}</span><span class="muted">รอ ${esc(nameOf(r.assessor))}${!r.closedYear&&r.remindedAt?` · แจ้งแล้ว ${r.remindedAt.slice(0,10)}`:""}</span>${r.closedYear?`<span class="need">ปิดปี ${r.closedYear} · ประเมินไม่ได้แล้ว</span>`:""}</span><span style="display:flex;flex-direction:column;gap:6px;flex:none">${S.confirm===r.id?`<button class="small danger" data-delyes="${r.id}">ยืนยันลบ</button>`:`${r.closedYear?"":`<button class="small" data-remind="${r.id}">${r.remindedAt?"แจ้งอีกครั้ง":"แจ้งเตือน"}</button>`}<button class="small" data-del="${r.id}">ลบ</button>`}</span></div>`).join(""):`<div class="empty">ไม่มีใบที่ค้างประเมิน</div>`);
   else if(S.tab==="nudge")body=nudgeView();
-  else body=dash();
+  else body=`<button class="small rpbtn" data-report>ออกรายงาน PDF</button>`+dash();
   return hdr()+tabs("tab",S.tab,[["dash","ภาพรวม"],["hist","ประเมินแล้ว"],["pend","ค้างประเมิน"+(pend.length?` <span class="badge">${pend.length}</span>`:"")],["nudge","เตือนส่ง"]])+body+(S.tab==="nudge"?"":warn())},
  form:()=>{const F=FORMS[S.type],d=S.draft,t=total(S.type,d.scores),any=F.kind==="slider"?d.touched.some(Boolean):d.scores.some(x=>typeof x==="number");
   return `<div class="top"><button class="ghost" data-home>‹ กลับ</button><span class="muted">${esc(nameOf(S.me))}</span></div>
@@ -444,6 +542,13 @@ const V={
     (S.adding===r.group?`<div><div class="muted">แตะชื่อเพื่อส่งเพิ่ม</div><div class="chips" style="margin-top:6px">${free.map(c=>`<button data-addto="${r.group}" data-c="${c}">${esc(STAFF[c])}</button>`).join("")}<button class="ghost" data-addx>เสร็จ</button></div></div>`
     :free.length?`<button class="small" data-add="${r.group}" style="align-self:flex-start">+ เพิ่มอาจารย์</button>`:"")}</div>`}).join("")
   :`<div class="empty">ยังไม่ได้ส่งใบประเมิน<br>กด "ส่งใบประเมินใหม่" แล้วเลือกอาจารย์ที่ต้องการให้ประเมิน</div>`))+warn()},
+ report:()=>{const R=S.rp,D=rpData(),cur=`ปีการศึกษาปัจจุบัน (ข้อมูลถึง ${thd(today())})`;
+  if(R.y!=="cur"&&!D&&!R.loading&&!R.err)setTimeout(()=>loadArc(R.y),0);
+  const label=R.y==="cur"?cur:`ปีการศึกษา ${R.y}`;
+  return `<div class="top noprint"><button class="ghost" data-home>‹ กลับ</button><span class="muted">รายงาน PDF</span></div>
+  <div class="noprint rp-ctl"><label for="rp-y">ปีการศึกษา<select id="rp-y" data-rpy><option value="cur" ${R.y==="cur"?"selected":""}>${cur}</option>${YEARS.map(y=>`<option value="${y}" ${R.y===y?"selected":""}>ปีการศึกษา ${y}</option>`).join("")}</select></label>
+  <button class="primary" data-print ${D?"":"disabled"}>บันทึกเป็น PDF</button><p class="muted" style="font-size:.8rem">กดแล้วเลือก "บันทึกเป็น PDF" หรือ "Save as PDF" · บน iPhone เลือก พิมพ์ แล้วกดแชร์เพื่อบันทึก</p></div>
+  ${R.err?`<div class="err noprint">${R.err}</div>`:""}${R.loading||!D?`<div class="empty noprint">กำลังโหลดข้อมูล…</div>`:report(D,label)}`},
  rnew:()=>{const n=S.nw,F=FORMS[n.type];
   return `<div class="top"><button class="ghost" data-home>‹ กลับ</button><span class="muted">${esc(nameOf(S.me))}</span></div><h1>${role(S.me)==="admin"?"ส่งใบประเมินแทน resident":"ส่งใบประเมินใหม่"}</h1>
   ${role(S.me)==="admin"?(()=>{const rs=n.rs||(n.rs=[]),all=Object.keys(RES),on=all.length&&all.every(c=>rs.includes(c));return `<div><div class="top"><label>แพทย์ประจำบ้าน</label><button type="button" class="small" style="white-space:nowrap;flex:none" data-nrsall aria-pressed="${!!on}">${on?"ล้างทั้งหมด":"All"}</button></div><div class="tpick rpick" style="margin-top:8px">${all.map(c=>`<button data-nrs="${c}" aria-pressed="${rs.includes(c)}"><span class="tn">${esc(plain(c))}</span><span class="ck" aria-hidden="true">${rs.includes(c)?"✓":""}</span></button>`).join("")}</div></div>`})():""}
@@ -456,14 +561,14 @@ const V={
 };
 function trend(k,rs){const a=[...rs].sort((x,y)=>x.date<y.date?-1:1).map(nat),n=a.length,l=a[n-1];
  if(n<2)return "ล่าสุด "+fa(k,l);const d=l-a[n-2];return "ล่าสุด "+fa(k,l)+" "+(d>0?"▲ "+fa(k,d):d<0?"▼ "+fa(k,-d):"เท่าเดิม")}
-function radar(F,rs,mx){const n=F.items.length,W=350,H=236,cx=175,cy=116,R=72;
+function radar(F,rs,mx,big){const n=F.items.length,W=350,H=big?250:236,cx=175,cy=big?124:116,R=big?84:72,LF=big?1.16:1.2;
  const v=F.items.map((q,i)=>avg(rs.map(r=>r.scores[i]).filter(x=>typeof x==="number")));
  const pt=(i,f)=>{const a=-Math.PI/2+i*2*Math.PI/n;return [cx+Math.cos(a)*R*f,cy+Math.sin(a)*R*f]},ring=f=>F.items.map((q,i)=>pt(i,f).map(z=>z.toFixed(1)).join(",")).join(" ");
  return `<svg class="radar" viewBox="0 0 ${W} ${H}" role="img" aria-label="คะแนนเฉลี่ยรายข้อ ${F.sn.map((l,i)=>l+" "+(v[i]==null?"N/A":v[i].toFixed(1))).join(", ")}">
  ${[.25,.5,.75,1].map(f=>`<polygon points="${ring(f)}" fill="none" stroke="var(--line)"/>`).join("")}
  ${F.items.map((q,i)=>{const [x,y]=pt(i,1);return `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--line)"/>`}).join("")}
  <polygon points="${F.items.map((q,i)=>pt(i,(v[i]||0)/mx).map(z=>z.toFixed(1)).join(",")).join(" ")}" fill="var(--tc)" fill-opacity=".18" stroke="var(--tc)" stroke-width="2" stroke-linejoin="round"/>
- ${F.items.map((q,i)=>{const [x,y]=pt(i,(v[i]||0)/mx),[lx,ly]=pt(i,1.2),c=Math.cos(-Math.PI/2+i*2*Math.PI/n),an=Math.abs(c)<.2?"middle":c>0?"start":"end";
+ ${F.items.map((q,i)=>{const [x,y]=pt(i,(v[i]||0)/mx),[lx,ly]=pt(i,LF),c=Math.cos(-Math.PI/2+i*2*Math.PI/n),an=Math.abs(c)<.2?"middle":c>0?"start":"end";
   return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="var(--tc)" stroke="var(--sheet)" stroke-width="2"><title>${F.sn[i]}: ${v[i]==null?"N/A":v[i].toFixed(1)} / ${mx}</title></circle><text x="${lx.toFixed(1)}" y="${(ly-2).toFixed(1)}" text-anchor="${an}" class="rl">${F.sn[i]}</text><text x="${lx.toFixed(1)}" y="${(ly+12).toFixed(1)}" text-anchor="${an}" class="rv">${v[i]==null?"N/A":v[i].toFixed(1)}</text>`}).join("")}</svg>`}
 function dash(){const seg=`<div class="seg">${years().map(([k,l])=>`<button data-yr="${k}" aria-pressed="${S.yr===k}">${l}</button>`).join("")}</div>`;
  if(S.yr==="all"){const cs=Object.keys(RES),k=S.dt,mx=Math.max(1,...cs.map(c=>acts(c,k)));
@@ -493,6 +598,7 @@ function setPhoto(c,img){const old=PH[c];if(img)PH[c]=img;else delete PH[c];S.pf
  S.pfBusy=true;keep();
  call({code:S.me,action:"photo",target:c,img:img||""},45000).then(x=>{if(!x||!x.ok)throw 0;PHV=x.pv;savePH();S.pfBusy=false;S.pf=null;keep()})
   .catch(()=>{if(old)PH[c]=old;else delete PH[c];S.pfBusy=false;S.pfErr="บันทึกรูปไม่สำเร็จ กรุณาลองอีกครั้ง";keep()})}
+document.addEventListener("change",e=>{if(e.target.id==="rp-y"&&S.rp){S.rp={y:e.target.value};keep();return}});
 document.addEventListener("change",e=>{if(e.target.id!=="pf-in"||!e.target.files||!e.target.files[0])return;const c=S.pf;
  shrink(e.target.files[0]).then(d=>setPhoto(c,d)).catch(()=>{S.pfErr="เปิดรูปนี้ไม่ได้ ลองเลือกรูปอื่น";keep()})});
 document.addEventListener("click",e=>{if(!S.pf||!e.target.closest)return;const t=e.target.closest("[data-pfx],[data-pfpick],[data-pfdel]");
@@ -535,6 +641,43 @@ function sendNudge(){const n=ndS();if(S.sending)return;
  S.sending=true;S.err="";S.note="";keep();
  call({code:S.me,action:"nudge",type:n.type,date:n.date,to:n.to},45000).then(x=>{if(!x||!x.ok)throw 0;done(x.sent)})
   .catch(()=>{S.sending=false;S.err="ส่งไม่สำเร็จ กรุณาลองอีกครั้ง";keep()})}
+
+// ---------- รายงาน PDF (ธุรการ) ----------
+let YEARS=[];const ARC={};
+const TM=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+const thd=s=>{const p=String(s||"").slice(0,10).split("-");return p.length<3?"":`${+p[2]} ${TM[+p[1]-1]} ${+p[0]+543}`};
+function rpData(){const y=S.rp.y;if(y==="cur")return {reqs:S.reqs,res:RES};return ARC[y]||null}
+function loadArc(y){if(ARC[y]||!GAS)return;S.rp.loading=true;
+ call({code:S.me,action:"archive",year:y},45000).then(x=>{if(!x||!x.ok)throw 0;ARC[y]={reqs:(x.requests||[]).map(norm),res:x.res||{}};S.rp.loading=false;if(S.view==="report")keep()})
+  .catch(()=>{S.rp.loading=false;S.rp.err="โหลดข้อมูลปี "+y+" ไม่สำเร็จ ลองอีกครั้ง";if(S.view==="report")keep()})}
+function pickTexts(rs,key){const seen=new Set(),out=[];
+ [...rs].sort((a,b)=>((b.doneAt||b.date)>(a.doneAt||a.date)?1:-1)).forEach(r=>{const t=String((r.t||{})[key]||"").replace(/\s+/g," ").trim();
+  const k=t.toLowerCase().replace(/[^\p{L}\p{N}]/gu,"");if(t.length<6||seen.has(k)||out.length>=4)return;seen.add(k);out.push({t:t.length>220?t.slice(0,217)+"…":t,m:FORMS[r.type].sh+" · "+thd(r.date)})});return out}
+function report(D,label){const rq=D.reqs,res=D.res,done=rq.filter(r=>r.status==="done");
+ const grp=(l)=>new Set(l.map(r=>r.group||r.id)).size;
+ const yrs=[...new Set(Object.values(res).map(r=>r.y))].sort();
+ const nm=c=>res[c]?res[c].t+res[c].f+" "+res[c].l:(NM[c]||c);
+ const head=`<header class="rp-h"><div><p class="rp-eb">NeuroRA evaluation · สาขาประสาทวิทยา</p><h1>รายงานผลการประเมินแพทย์ประจำบ้าน</h1></div><div class="rp-meta"><b>${label}</b><span>ออกรายงาน ${thd(today())}</span></div></header>`;
+ const kpi=KS.map(t=>{const all=rq.filter(r=>r.type===t),d=done.filter(r=>r.type===t),a=avg(d.map(nat));
+  return `<div class="rp-k ty-${t}"><span class="tn2">${FORMS[t].name}</span><div class="rp-kn"><div><b>${grp(all)}</b><span>ครั้ง</span></div><div><b>${d.length}</b><span>ใบประเมินแล้ว${all.length>d.length?` (รอ ${all.length-d.length})`:""}</span></div><div><b>${a==null?"–":fa(t,a)}</b><span>คะแนนเฉลี่ย / ${t==="clin"?9:100}</span></div></div></div>`}).join("");
+ const rows=yrs.map(y=>{const cs=Object.keys(res).filter(c=>res[c].y===y);
+  return `<tr class="rp-yr"><th colspan="6">${y}</th></tr>`+cs.map(c=>{const n=KS.map(t=>grp(rq.filter(r=>r.resCode===c&&r.type===t)));
+   return `<tr><td>${esc(nm(c))}</td><td class="n">${c}</td>${n.map(v=>`<td class="n${v?"":" z"}">${v}</td>`).join("")}<td class="n"><b>${n.reduce((a,b)=>a+b,0)}</b></td></tr>`}).join("")}).join("");
+ const p1=`<section class="rp-page">${head}<h2>ส่วนที่ 1 ภาพรวมกิจกรรม</h2><div class="rp-ks">${kpi}</div>
+  <h2>จำนวนครั้งที่ resident แต่ละคนทำกิจกรรม</h2><table class="rp-t"><thead><tr><th>ชื่อ-สกุล</th><th>รหัส</th><th>Journal club</th><th>Topic</th><th>Grand round</th><th>รวม</th></tr></thead><tbody>${rows||`<tr><td colspan="6">ไม่มีข้อมูล</td></tr>`}</tbody></table>
+  <p class="rp-note">นับ 1 ครั้งต่อการนำเสนอ 1 ครั้งของ resident (ไม่ว่าส่งถึงอาจารย์กี่ท่าน) · คะแนนเฉลี่ยคิดจากใบที่ประเมินแล้ว</p></section>`;
+ const pages=yrs.flatMap(y=>Object.keys(res).filter(c=>res[c].y===y)).map((c,i)=>{const R=res[c],ds=done.filter(r=>r.resCode===c);
+  const ph=okImg(PH[c])?`<img src="${PH[c]}" alt="">`:`<span>${esc((R.f||"?")[0])}</span>`,nAll=grp(rq.filter(r=>r.resCode===c));
+  const acts=KS.map(t=>{const rs=ds.filter(r=>r.type===t),n=grp(rq.filter(r=>r.resCode===c&&r.type===t)),a=avg(rs.map(nat)),F=FORMS[t];
+   return `<div class="rp-a ty-${t}"><div class="rp-ah"><b>${F.sh}</b><span>${n} ครั้ง · ${rs.length} ใบ</span></div>
+   <div class="rp-as"><b>${a==null?"–":fa(t,a)}</b><small>/${t==="clin"?9:100}</small>${a==null?"":`<span class="rp-lv">${level(t,a)}</span>`}</div>
+   ${rs.length?radar(F,rs,t==="clin"?9:20,1):`<div class="rp-none">ยังไม่มีผลประเมิน</div>`}</div>`}).join("");
+  const li=l=>l.length?`<ul>${l.map(o=>`<li>${esc(o.t)}<small>${o.m}</small></li>`).join("")}</ul>`:`<p class="rp-none">ยังไม่มีความเห็น</p>`;
+  return `<section class="rp-page">${i===0?`<h2 class="rp-s2">ส่วนที่ 2 สมรรถนะรายบุคคล</h2>`:""}<div class="rp-hero"><div class="rp-ph">${ph}</div><div class="rp-who"><h3>${esc(nm(c))}</h3><p>รหัสประจำตัว ${c}</p></div></div>
+   <div class="rp-as3">${acts}</div>
+   <div class="rp-c"><div class="rp-good"><h4>จุดเด่น</h4>${li(pickTexts(ds,"strength"))}</div><div class="rp-imp"><h4>สิ่งที่ต้องพัฒนา</h4>${li(pickTexts(ds,"improve"))}</div></div>
+   <p class="rp-note">ความเห็นคัดจากใบประเมินล่าสุด หมวดละไม่เกิน 4 ข้อ ตัดข้อความซ้ำ</p></section>`}).join("");
+ return `<div class="rpt">${p1}${pages}</div>`}
 function keep(){const y=scrollY;render();scrollTo(0,y)}
 function key(k){if(S.view!=="login")return;
  if(k==="del"){S.code=S.code.slice(0,-1);S.err=""}
@@ -580,6 +723,8 @@ document.addEventListener("click",e=>{const b=e.target.closest("button")||e.targ
  if("ndall" in ds){const n=ndS(),ok=Object.keys(RES).filter(c=>LINKED.has(c));n.to=ok.every(c=>n.to.includes(c))?[]:ok;S.err="";keep();return}
  if(ds.ndr){const n=ndS(),c=ds.ndr;n.to=n.to.includes(c)?n.to.filter(y=>y!==c):[...n.to,c];S.err="";keep();return}
  if("ndsend" in ds){sendNudge();return}
+ if("report" in ds){go("report",{rp:{y:"cur"}});return}
+ if("print" in ds){window.print();return}
  if(ds.d){key(ds.d);return}
  if("out" in ds){S.me=null;ls.set("nra_me",null);go("login",{code:""})}
  else if("home" in ds)home();
