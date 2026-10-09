@@ -457,8 +457,9 @@ function del(id){S.reqs=S.reqs.filter(x=>x.id!==id);persist();
 function go(view,x={}){Object.assign(S,{view,note:"",qd:null,miss:false,fb:false,err:"",confirm:null,adding:null},x);render();scrollTo(0,0)}
 const home=()=>go({res:"rhome",admin:"ahome"}[role(S.me)]||"thome");
 function load(x){if(x.years)YEARS=x.years;if(x.linked)LINKED=new Set(x.linked);if(x.pv!=null&&String(x.pv)!==String(PHV))setTimeout(getPhotos,50);STAFF=x.staff;RES=x.res;ADMIN=x.admin;S.reqs=x.requests.map(norm);S.reqs.forEach(r=>{if(r.resName)NM[r.resCode]=r.resName;if(r.assessorName)NM[r.assessor]=r.assessorName})}
-let JOB=null,NEWJ=null;const readJob=()=>{const m=location.hash.match(/j=([^&]+)/);if(m)JOB=decodeURIComponent(m[1]);const n=location.hash.match(/[#&]n=(jc|topic|clin)/),dd=location.hash.match(/[#&]d=(\d{4}-\d{2}-\d{2})/);if(n)NEWJ={t:n[1],d:dd?dd[1]:""}};readJob();
-function openJob(){if(NEWJ&&S.me){const q=NEWJ;NEWJ=null;try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}if(role(S.me)==="res"){go("rnew",{nw:{type:q.t,f:{},date:q.d||today(),as:[],res:""}});return}}
+let JOB=null,NEWJ=null,RPJ=false;const readJob=()=>{const m=location.hash.match(/j=([^&]+)/);if(m)JOB=decodeURIComponent(m[1]);const n=location.hash.match(/[#&]n=(jc|topic|clin)/),dd=location.hash.match(/[#&]d=(\d{4}-\d{2}-\d{2})/);if(n)NEWJ={t:n[1],d:dd?dd[1]:""};if(/[#&]rp\b/.test(location.hash))RPJ=true};readJob();
+function openJob(){if(RPJ&&S.me){RPJ=false;try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}if(role(S.me)==="admin"){go("report",{rp:{y:"cur"}});return}}
+ if(NEWJ&&S.me){const q=NEWJ;NEWJ=null;try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}if(role(S.me)==="res"){go("rnew",{nw:{type:q.t,f:{},date:q.d||today(),as:[],res:""}});return}}
  if(!JOB||!S.me)return;const id=JOB;JOB=null;try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
  if(role(S.me)!=="staff")return;const r=S.reqs.find(x=>x.id===id);
  if(!r||r.assessor!==S.me){S.note="ไม่พบใบประเมินนี้ อาจถูกลบไปแล้ว";keep();return}
@@ -555,6 +556,7 @@ const V={
   return `<div class="top noprint"><button class="ghost" data-home>‹ กลับ</button><span class="muted">รายงาน PDF</span></div>
   <div class="noprint rp-ctl"><label for="rp-y">ปีการศึกษา<select id="rp-y" data-rpy><option value="cur" ${R.y==="cur"?"selected":""}>${cur}</option>${YEARS.map(y=>`<option value="${y}" ${R.y===y?"selected":""}>ปีการศึกษา ${y}</option>`).join("")}</select></label>
   <button class="primary" data-print ${D?"":"disabled"}>บันทึกเป็น PDF</button><p class="muted" style="font-size:.8rem">กดแล้วเลือก "บันทึกเป็น PDF" หรือ "Save as PDF" · บน iPhone เลือก พิมพ์ แล้วกดแชร์เพื่อบันทึก</p></div>
+  ${R.hint?`<div class="okb noprint" style="text-align:left;font-weight:400">แอปที่เปิดจากไอคอนหน้าจอโฮมบันทึก PDF ไม่ได้ (ข้อจำกัดของ iPhone)<br><a href="${location.origin+location.pathname}#rp" target="_blank" rel="noopener" style="font-weight:700">กดที่นี่เพื่อเปิดรายงานใน Safari</a> แล้วกด "บันทึกเป็น PDF" อีกครั้ง (อาจต้องใส่รหัสเข้าระบบใหม่ 1 ครั้ง)</div>`:""}
   ${R.err?`<div class="err noprint">${R.err}</div>`:""}${R.loading||!D?`<div class="empty noprint">กำลังโหลดข้อมูล…</div>`:report(D,label)}`},
  rnew:()=>{const n=S.nw,F=FORMS[n.type];
   return `<div class="top"><button class="ghost" data-home>‹ กลับ</button><span class="muted">${esc(nameOf(S.me))}</span></div><h1>${role(S.me)==="admin"?"ส่งใบประเมินแทน resident":"ส่งใบประเมินใหม่"}</h1>
@@ -731,7 +733,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("button")||e.targ
  if(ds.ndr){const n=ndS(),c=ds.ndr;n.to=n.to.includes(c)?n.to.filter(y=>y!==c):[...n.to,c];S.err="";keep();return}
  if("ndsend" in ds){sendNudge();return}
  if("report" in ds){go("report",{rp:{y:"cur"}});return}
- if("print" in ds){window.print();return}
+ if("print" in ds){const sa=navigator.standalone===true||(window.matchMedia&&matchMedia("(display-mode: standalone)").matches);if(sa&&/iPhone|iPad|iPod/.test(navigator.userAgent)){S.rp.hint=true;keep();return}window.print();return}
  if(ds.d){key(ds.d);return}
  if("out" in ds){S.me=null;ls.set("nra_me",null);go("login",{code:""})}
  else if("home" in ds)home();
