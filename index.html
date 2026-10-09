@@ -266,6 +266,11 @@ input,textarea,select{font-size:16px!important}
 @keyframes swl{from{transform:translateX(28px);opacity:.3}to{transform:none;opacity:1}}
 @keyframes swr{from{transform:translateX(-28px);opacity:.3}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){#app.sw-l>*,#app.sw-r>*{animation:none!important}}
+.muted.one{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tpick .sub{display:block;font-weight:400;font-size:.78rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tpick .tn{overflow:hidden}
+.tpick button.off{opacity:.55}
+.nolk{color:var(--low)}
 </style>
 <div id="app"></div>
 <script>
@@ -299,7 +304,7 @@ const FORMS={
   texts:[["strength","จุดเด่น"],["improve","สิ่งที่ต้องพัฒนา"]]}
 };
 
-const today=()=>new Date().toISOString().slice(0,10);
+const today=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
 const newId=()=>"r"+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}};
@@ -342,9 +347,10 @@ function del(id){S.reqs=S.reqs.filter(x=>x.id!==id);persist();
  if(DB)DB.collection("requests").doc(id).delete().catch(()=>{S.warn="ลบไม่สำเร็จ ลองอีกครั้ง";render()})}
 function go(view,x={}){Object.assign(S,{view,note:"",qd:null,miss:false,fb:false,err:"",confirm:null,adding:null},x);render();scrollTo(0,0)}
 const home=()=>go({res:"rhome",admin:"ahome"}[role(S.me)]||"thome");
-function load(x){if(x.pv!=null&&String(x.pv)!==String(PHV))setTimeout(getPhotos,50);STAFF=x.staff;RES=x.res;ADMIN=x.admin;S.reqs=x.requests.map(norm);S.reqs.forEach(r=>{if(r.resName)NM[r.resCode]=r.resName;if(r.assessorName)NM[r.assessor]=r.assessorName})}
-let JOB=null;const readJob=()=>{const m=location.hash.match(/j=([^&]+)/);if(m)JOB=decodeURIComponent(m[1])};readJob();
-function openJob(){if(!JOB||!S.me)return;const id=JOB;JOB=null;try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
+function load(x){if(x.linked)LINKED=new Set(x.linked);if(x.pv!=null&&String(x.pv)!==String(PHV))setTimeout(getPhotos,50);STAFF=x.staff;RES=x.res;ADMIN=x.admin;S.reqs=x.requests.map(norm);S.reqs.forEach(r=>{if(r.resName)NM[r.resCode]=r.resName;if(r.assessorName)NM[r.assessor]=r.assessorName})}
+let JOB=null,NEWJ=null;const readJob=()=>{const m=location.hash.match(/j=([^&]+)/);if(m)JOB=decodeURIComponent(m[1]);const n=location.hash.match(/[#&]n=(jc|topic|clin)/),dd=location.hash.match(/[#&]d=(\d{4}-\d{2}-\d{2})/);if(n)NEWJ={t:n[1],d:dd?dd[1]:""}};readJob();
+function openJob(){if(NEWJ&&S.me){const q=NEWJ;NEWJ=null;try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}if(role(S.me)==="res"){go("rnew",{nw:{type:q.t,f:{},date:q.d||today(),as:[],res:""}});return}}
+ if(!JOB||!S.me)return;const id=JOB;JOB=null;try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
  if(role(S.me)!=="staff")return;const r=S.reqs.find(x=>x.id===id);
  if(!r||r.assessor!==S.me){S.note="ไม่พบใบประเมินนี้ อาจถูกลบไปแล้ว";keep();return}
  if(r.closedYear){S.note="ใบนี้ปิดรับประเมินแล้ว";keep();return}
@@ -385,8 +391,9 @@ const V={
   if(S.tab==="hist"){const l=done.filter(r=>S.hf==="all"||r.type===S.hf);
    body=`<div class="chips hfc"><button data-hf="all" aria-pressed="${S.hf==="all"}">All</button>${KS.map(k=>`<button data-hf="${k}" class="tyb ty-${k}" aria-pressed="${S.hf===k}">${k==="jc"?"Journal":FORMS[k].sh}</button>`).join("")}</div>`+(l.length?l.map(recCard).join(""):`<div class="empty">ยังไม่มีใบที่ประเมินแล้ว</div>`)}
   else if(S.tab==="pend")body=`<button class="primary" data-new>+ ส่งใบประเมินแทน resident</button>`+(pend.length?pend.map(r=>`<div class="card ty-${r.type}" style="display:flex;align-items:center;gap:10px"><span class="nm"><b>${esc(plain(r.resCode))}</b><span class="muted"><span class="tn2" style="font-size:.82rem">${FORMS[r.type].sh}</span> · ${r.date}</span><span class="muted">รอ ${esc(nameOf(r.assessor))}${!r.closedYear&&r.remindedAt?` · แจ้งแล้ว ${r.remindedAt.slice(0,10)}`:""}</span>${r.closedYear?`<span class="need">ปิดปี ${r.closedYear} · ประเมินไม่ได้แล้ว</span>`:""}</span><span style="display:flex;flex-direction:column;gap:6px;flex:none">${S.confirm===r.id?`<button class="small danger" data-delyes="${r.id}">ยืนยันลบ</button>`:`${r.closedYear?"":`<button class="small" data-remind="${r.id}">${r.remindedAt?"แจ้งอีกครั้ง":"แจ้งเตือน"}</button>`}<button class="small" data-del="${r.id}">ลบ</button>`}</span></div>`).join(""):`<div class="empty">ไม่มีใบที่ค้างประเมิน</div>`);
+  else if(S.tab==="nudge")body=nudgeView();
   else body=dash();
-  return hdr()+tabs("tab",S.tab,[["dash","ภาพรวม"],["hist","ประเมินแล้ว"],["pend","ค้างประเมิน"+(pend.length?` <span class="badge">${pend.length}</span>`:"")]])+body+warn()},
+  return hdr()+tabs("tab",S.tab,[["dash","ภาพรวม"],["hist","ประเมินแล้ว"],["pend","ค้างประเมิน"+(pend.length?` <span class="badge">${pend.length}</span>`:"")],["nudge","เตือนส่ง"]])+body+(S.tab==="nudge"?"":warn())},
  form:()=>{const F=FORMS[S.type],d=S.draft,t=total(S.type,d.scores),any=F.kind==="slider"?d.touched.some(Boolean):d.scores.some(x=>typeof x==="number");
   return `<div class="top"><button class="ghost" data-home>‹ กลับ</button><span class="muted">${esc(nameOf(S.me))}</span></div>
   ${d.edit?`<p class="lockn">${d.locked?"ใบนี้ประเมินแล้ว กด \"แก้ไข\" ด้านล่างเพื่อแก้คะแนน":"กำลังแก้ไข แก้เสร็จแล้วกด \"บันทึกการแก้ไข\""}</p>`:""}${d.reqId?`<h1 class="tn2">${F.name}</h1>`:tabs("ftype",S.type,KS.map(k=>[k,FORMS[k].sh,"ty-"+k]))}
@@ -489,7 +496,7 @@ document.addEventListener("click",e=>{if(!S.pf||!e.target.closest)return;const t
  if(!t)return;if("pfpick" in t.dataset){const i=document.getElementById("pf-in");if(i)i.click()}else if("pfdel" in t.dataset)setPhoto(S.pf,null)});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&S.pf&&!S.pfBusy){S.pf=null;keep()}});
 // ปัดซ้าย/ขวาเพื่อเปลี่ยน tab
-const TABS={thome:["tab",["todo","self","hist","dash"]],ahome:["tab",["dash","hist","pend"]],rhome:["rtab",["list","me"]]};
+const TABS={thome:["tab",["todo","self","hist","dash"]],ahome:["tab",["dash","hist","pend","nudge"]],rhome:["rtab",["list","me"]]};
 let SW=null;
 const hscroll=el=>{for(;el&&el!==document.body;el=el.parentElement){const o=getComputedStyle(el).overflowX;if((o==="auto"||o==="scroll")&&el.scrollWidth>el.clientWidth+2)return true}return false};
 document.addEventListener("touchstart",e=>{SW=null;if(e.touches.length!==1||!TABS[S.view]||S.pf)return;const t=e.target;
@@ -498,6 +505,32 @@ document.addEventListener("touchend",e=>{if(!SW)return;const p=e.changedTouches[
  if(dt>800||Math.abs(dx)<60||Math.abs(dx)<Math.abs(dy)*1.6)return;const T=TABS[S.view];if(!T)return;
  const L=T[1],i=L.indexOf(S[T[0]]),j=i+(dx<0?1:-1);if(i<0||j<0||j>=L.length)return;
  go(S.view,{[T[0]]:L[j]});const a=document.getElementById("app");a.classList.add(dx<0?"sw-l":"sw-r");setTimeout(()=>a.classList.remove("sw-l","sw-r"),300)},{passive:true});
+
+// ธุรการ: ส่ง LINE เตือน resident ให้ส่งใบประเมิน
+let LINKED=new Set(),QUOTA=null,QL=false;
+const ndS=()=>S.nd||(S.nd={type:"",date:today(),to:[]});
+function getQuota(){if(!GAS||QL)return;QL=true;call({code:S.me,action:"lineq"}).then(x=>{QL=false;if(x&&x.ok){QUOTA=x;if(S.view==="ahome"&&S.tab==="nudge")keep()}}).catch(()=>{QL=false})}
+function nudgeView(){const n=ndS(),cs=Object.keys(RES),ok=cs.filter(c=>LINKED.has(c)),allOn=ok.length&&ok.every(c=>n.to.includes(c));
+ if(QUOTA==null)setTimeout(getQuota,0);
+ n.to=n.to.filter(c=>LINKED.has(c));
+ return `<p class="muted one">ส่ง LINE เตือนให้ resident ส่งใบประเมิน</p>
+ ${S.note?`<div class="okb" role="status">${S.note}</div>`:""}
+ <div><label>ประเภท</label><div class="chips chips3" style="margin-top:6px">${KS.map(k=>`<button data-ndt="${k}" class="tyb ty-${k}" aria-pressed="${n.type===k}">${{jc:"Journal",topic:"Topic",clin:"Grand round"}[k]}</button>`).join("")}</div></div>
+ <label for="nd-date">วันที่<input id="nd-date" type="date" data-ndd value="${n.date}"></label>
+ <div><div class="top"><label>resident</label><button type="button" class="small" style="white-space:nowrap;flex:none" data-ndall aria-pressed="${!!allOn}" ${ok.length?"":"disabled"}>${allOn?"ล้างทั้งหมด":"All"}</button></div>
+ <div class="tpick" style="margin-top:8px">${cs.map(c=>{const on=n.to.includes(c),lk=LINKED.has(c);return `<button data-ndr="${c}" aria-pressed="${on}" ${lk?"":'disabled class="off"'}>${av(c)}<span class="tn">${esc(plain(c))}<span class="sub">${RES[c].y} · ${lk?"เชื่อม LINE แล้ว":'<span class="nolk">ยังไม่เชื่อม LINE</span>'}</span></span><span class="ck" aria-hidden="true">${on?"✓":""}</span></button>`}).join("")}</div></div>
+ ${QUOTA&&QUOTA.used!=null?`<p class="muted one" style="font-size:.8rem">LINE เดือนนี้ใช้ไป ${QUOTA.used}${QUOTA.limit?` จาก ${QUOTA.limit}`:""} ข้อความ</p>`:""}
+ ${S.err?`<div class="err" role="alert">${S.err}</div>`:""}
+ <div class="bar"><div><div class="tot muted">เลือก ${n.to.length} คน</div><button class="primary" data-ndsend ${S.sending?"disabled":""}>${S.sending?"กำลังส่ง…":"ส่งเตือนทาง LINE"}</button></div></div>`}
+function sendNudge(){const n=ndS();if(S.sending)return;
+ if(!n.type){S.err="กรุณาเลือกประเภท";keep();return}
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(n.date)){S.err="กรุณาเลือกวันที่";keep();return}
+ if(!n.to.length){S.err="กรุณาเลือก resident อย่างน้อย 1 คน";keep();return}
+ const done=k=>{S.sending=false;S.err="";S.note=`ส่ง LINE เตือนแล้ว ${k} คน`;n.to=[];QUOTA=null;keep()};
+ if(!GAS){done(n.to.length);return}
+ S.sending=true;S.err="";S.note="";keep();
+ call({code:S.me,action:"nudge",type:n.type,date:n.date,to:n.to},45000).then(x=>{if(!x||!x.ok)throw 0;done(x.sent)})
+  .catch(()=>{S.sending=false;S.err="ส่งไม่สำเร็จ กรุณาลองอีกครั้ง";keep()})}
 function keep(){const y=scrollY;render();scrollTo(0,y)}
 function key(k){if(S.view!=="login")return;
  if(k==="del"){S.code=S.code.slice(0,-1);S.err=""}
@@ -527,6 +560,7 @@ document.addEventListener("keydown",e=>{
  if(S.view==="login"){if(/^\d$/.test(e.key))key(e.key);else if(e.key==="Backspace")key("del");else if(e.key==="Enter"){e.preventDefault();key("ok")}return}
  if((e.key==="Enter"||e.key===" ")&&e.target.matches&&e.target.matches("[role=button]")){e.preventDefault();e.target.click()}});
 document.addEventListener("input",e=>{const el=e.target,d=S.draft;
+ if("ndd" in el.dataset){ndS().date=el.value;return}
  if(el.dataset.nf&&S.nw){S.nw.f[el.dataset.nf]=el.value;return}
  if(el.dataset.n&&S.nw){S.nw[el.dataset.n]=el.value;return}
  if(!d)return;
@@ -538,6 +572,10 @@ document.addEventListener("input",e=>{const el=e.target,d=S.draft;
 document.addEventListener("click",e=>{const b=e.target.closest("button")||e.target.closest("[data-tog]");if(!b)return;const ds=b.dataset,d=S.draft;
  if(S.pf)return;
  if(ds.pf){S.pf=ds.pf;S.pfErr="";keep();return}
+ if(ds.ndt){ndS().type=ds.ndt;S.err="";keep();return}
+ if("ndall" in ds){const n=ndS(),ok=Object.keys(RES).filter(c=>LINKED.has(c));n.to=ok.every(c=>n.to.includes(c))?[]:ok;S.err="";keep();return}
+ if(ds.ndr){const n=ndS(),c=ds.ndr;n.to=n.to.includes(c)?n.to.filter(y=>y!==c):[...n.to,c];S.err="";keep();return}
+ if("ndsend" in ds){sendNudge();return}
  if(ds.d){key(ds.d);return}
  if("out" in ds){S.me=null;ls.set("nra_me",null);go("login",{code:""})}
  else if("home" in ds)home();
