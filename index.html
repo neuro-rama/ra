@@ -372,6 +372,14 @@ input,textarea,select{font-size:16px!important}
  .rp-ks,.rp-as3{grid-template-columns:repeat(3,minmax(0,1fr))!important}.rp-c{grid-template-columns:1fr 1fr!important}
  .rp-h{flex-direction:row!important;align-items:flex-end!important}.rp-meta{align-items:flex-end!important;text-align:right!important}
  .rp-a,.rp-k,.rp-c>div,.rp-t tr{break-inside:avoid}
+
+ /* Safari: แบ่งหน้าไม่ได้ถ้าอยู่ใน flex ใช้ block ตอนพิมพ์ */
+ #app,.rpt,.rp-page{display:block!important}
+ .rp-page+.rp-page{break-before:page!important;page-break-before:always!important}
+ .rp-page>*+*{margin-top:14px}
+ .rp-page h2.rp-s2+*{margin-top:8px}
+ .rp-ks,.rp-as3,.rp-c{display:grid!important}
+ .rp-hero,.rp-h{display:flex!important}
 }
 </style>
 <div id="app"></div>
